@@ -3,7 +3,7 @@ import { FaChartBar, FaShoppingCart, FaFileAlt } from "react-icons/fa"; // Impor
 import { IoIosMap } from "react-icons/io";
 function SideBar() {
   return (
-    <aside className="w-64 bg-white shadow-md">
+    <aside className="w-64 bg-grey shadow-md">
       <div className="p-6 border-b border-gray-200">
         <h1 className="text-lg font-bold text-blue-600">Tickvivo</h1>
       </div>
@@ -27,6 +27,24 @@ function SideBar() {
             >
               <FaShoppingCart className="mr-2" />
               Category
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/dashboard/event"
+              className="flex items-center px-3 py-2 rounded hover:bg-gray-100"
+            >
+              <FaChartBar className="mr-2" />
+              Event
+            </Link>
+          </li>
+          <li>
+            <Link
+              to="/dashboard/createevent"
+              className="flex items-center px-3 py-2 rounded hover:bg-gray-100"
+            >
+              <FaChartBar className="mr-2" />
+               Add Event
             </Link>
           </li>
           <li>
