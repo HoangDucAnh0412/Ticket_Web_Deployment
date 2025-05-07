@@ -40,14 +40,14 @@ function SideBar() {
           </li>
           <li>
             <Link
-              to="/dashboard/createevent"
+              to="/dashboard/map"
               className="flex items-center px-3 py-2 rounded hover:bg-gray-100"
             >
-              <FaChartBar className="mr-2" />
-               Add Event
+              <IoIosMap className="mr-2" />
+               Map
             </Link>
           </li>
-          <li>
+          {/* <li>
             <Link
               to="/dashboard/map"
               className="flex items-center px-3 py-2 rounded hover:bg-gray-100"
@@ -55,7 +55,7 @@ function SideBar() {
               <IoIosMap  className="mr-2" />
               Map
             </Link>
-          </li>
+          </li> */}
           <li>
             <Link
               to="/dashboard/profile"
