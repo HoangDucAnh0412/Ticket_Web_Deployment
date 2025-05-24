@@ -1,18 +1,18 @@
 import { Outlet } from "react-router-dom";
-import SideBar from "../components/SideBar";
+import OrganizerSideBar from "../../components/layout/OrganizerSideBar";
 
-const Dashboard = () => {
+const OrganizerDashboard = () => {
   return (
     <div className="flex min-h-screen bg-white-50">
       {/* Sidebar luôn hiển thị */}
-      <SideBar />
+      <OrganizerSideBar />
 
       {/* Outlet là nơi các nội dung con được hiển thị */}
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-8 pl-64">
         <Outlet />
       </main>
     </div>
   );
 };
 
-export default Dashboard;
+export default OrganizerDashboard;

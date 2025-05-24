@@ -1,6 +1,7 @@
 import React from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
 
 function Profile() {
   const username = localStorage.getItem("username");
@@ -11,7 +12,7 @@ function Profile() {
     try {
       await axios.post(
         "http://localhost:8085/api/auth/logout",
-        {}, // body rỗng
+        {},
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -19,32 +20,43 @@ function Profile() {
         }
       );
 
-      // Xoá token và username khỏi localStorage
       localStorage.removeItem("token");
       localStorage.removeItem("username");
 
-      // Chuyển hướng về trang login
       navigate("/login");
     } catch (error) {
-      console.error("Lỗi khi đăng xuất:", error);
-      alert("Đăng xuất thất bại. Vui lòng thử lại!");
+      console.error("Error during sign out:", error);
+      alert("Sign out failed. Please try again!");
     }
   };
 
   return (
-    <div className="p-6 bg-gray-100 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">🎉 Dashboard</h1>
+    <div>
+      {/* Header with Tickvivo Logo */}
+      {/* Profile Card */}
+      <div className="max-w-md mx-auto bg-white p-6 rounded-3xl shadow-lg border border-gray-200 space-y-6">
+        {/* Welcome Message */}
+        <div className="flex items-center gap-3">
+          <FaUserCircle className="text-green-500 text-4xl" />
+          <div>
+            <p className="text-lg font-semibold text-gray-700">
+              Welcome, {username}!
+            </p>
+            <p className="text-sm text-gray-500">
+              Manage your account details below.
+            </p>
+          </div>
+        </div>
 
-      <div className="bg-white p-4 rounded shadow space-y-4">
-        <p>
-          <strong>👤 Tên đăng nhập:</strong> {username}
-        </p>
+        {/* Divider */}
+        <hr className="border-gray-200" />
 
+        {/* Sign Out Button */}
         <button
           onClick={handleLogout}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-3xl hover:bg-green-600 transition"
         >
-          🚪 Đăng xuất
+          Sign Out
         </button>
       </div>
     </div>

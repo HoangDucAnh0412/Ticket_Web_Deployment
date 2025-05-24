@@ -10,17 +10,21 @@ interface Category {
 }
 
 export const useCategoryLogic = () => {
+  // State management
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortAsc, setSortAsc] = useState(true);
+
+  // Modal state
   const [showModal, setShowModal] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editCategoryId, setEditCategoryId] = useState<number | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [filteredCategories, setFilteredCategories] = useState<Category[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [sortAsc, setSortAsc] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
 
+  // Fetch categories
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -47,14 +51,17 @@ export const useCategoryLogic = () => {
     }
   };
 
+  // Initial fetch
   useEffect(() => {
     fetchCategories();
   }, []);
 
+  // Search effect
   useEffect(() => {
     handleSearch(searchTerm);
   }, [categories]);
 
+  // Sort handler
   const handleSort = () => {
     const sorted = [...filteredCategories].sort((a, b) =>
       sortAsc ? b.categoryId - a.categoryId : a.categoryId - b.categoryId
@@ -63,6 +70,7 @@ export const useCategoryLogic = () => {
     setSortAsc(!sortAsc);
   };
 
+  // Search handler
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     const filtered = categories.filter((cat) =>
@@ -71,6 +79,7 @@ export const useCategoryLogic = () => {
     setFilteredCategories(filtered);
   };
 
+  // Add category
   const handleAddCategory = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -94,21 +103,14 @@ export const useCategoryLogic = () => {
       setCategories(updated);
       setFilteredCategories(updated);
       setShowModal(false);
-      setName("");
-      setDescription("");
-      setErrorMessage("");
+      resetForm();
       toast.success("Thêm danh mục thành công!");
     } catch (error: any) {
-      if (error.response && error.response.status === 409) {
-        setErrorMessage(error.response.data.message);
-        toast.error(error.response.data.message);
-      } else {
-        setErrorMessage("Đã xảy ra lỗi khi thêm danh mục.");
-        toast.error("Đã xảy ra lỗi khi thêm danh mục.");
-      }
+      handleError(error, "thêm");
     }
   };
 
+  // Edit category
   const handleEditCategory = (category: Category) => {
     setIsEditMode(true);
     setEditCategoryId(category.categoryId);
@@ -117,6 +119,7 @@ export const useCategoryLogic = () => {
     setShowModal(true);
   };
 
+  // Update category
   const handleUpdateCategory = async () => {
     if (editCategoryId === null) return;
 
@@ -144,23 +147,14 @@ export const useCategoryLogic = () => {
       setCategories(updated);
       setFilteredCategories(updated);
       setShowModal(false);
-      setIsEditMode(false);
-      setEditCategoryId(null);
-      setName("");
-      setDescription("");
-      setErrorMessage("");
+      resetForm();
       toast.success("Cập nhật danh mục thành công!");
     } catch (error: any) {
-      if (error.response && error.response.status === 400) {
-        setErrorMessage(error.response.data.message);
-        toast.error(error.response.data.message);
-      } else {
-        setErrorMessage("Đã xảy ra lỗi khi cập nhật danh mục.");
-        toast.error("Đã xảy ra lỗi khi cập nhật danh mục.");
-      }
+      handleError(error, "cập nhật");
     }
   };
 
+  // Delete category
   const handleDeleteCategory = async (categoryId: number) => {
     const confirm = await Swal.fire({
       title: "Bạn có chắc muốn xóa?",
@@ -204,27 +198,44 @@ export const useCategoryLogic = () => {
     }
   };
 
+  // Helper functions
+  const resetForm = () => {
+    setIsEditMode(false);
+    setEditCategoryId(null);
+    setName("");
+    setDescription("");
+    setErrorMessage("");
+  };
+
+  const handleError = (error: any, action: string) => {
+    if (error.response && error.response.status === 409) {
+      setErrorMessage(error.response.data.message);
+      toast.error(error.response.data.message);
+    } else {
+      setErrorMessage(`Đã xảy ra lỗi khi ${action} danh mục.`);
+      toast.error(`Đã xảy ra lỗi khi ${action} danh mục.`);
+    }
+  };
+
   return {
-    showModal,
-    setShowModal,
-    isEditMode,
-    setIsEditMode,
-    editCategoryId,
-    setEditCategoryId,
-    name,
-    setName,
-    description,
-    setDescription,
+    // State
     categories,
-    setCategories,
     filteredCategories,
-    setFilteredCategories,
-    errorMessage,
-    setErrorMessage,
-    sortAsc,
-    setSortAsc,
     searchTerm,
-    setSearchTerm,
+    sortAsc,
+    showModal,
+    isEditMode,
+    name,
+    description,
+    errorMessage,
+
+    // Setters
+    setShowModal,
+    setName,
+    setDescription,
+    setErrorMessage,
+
+    // Handlers
     handleSort,
     handleSearch,
     handleAddCategory,

@@ -12,8 +12,7 @@ import {
   FaInfoCircle,
 } from "react-icons/fa";
 import { LuClockArrowDown, LuClockArrowUp } from "react-icons/lu";
-import CreateEvent from "./CreateEvent";
-import UpdateEvent from "./UpdateEvent";
+import { useNavigate, Link } from "react-router-dom";
 
 interface Event {
   eventId: number;
@@ -31,10 +30,6 @@ interface Event {
 }
 
 const Event = () => {
-  const [showDetailModal, setShowDetailModal] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
-  const [showUpdateModal, setShowUpdateModal] = useState(false);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [events, setEvents] = useState<Event[]>([]);
   const [filteredEvents, setFilteredEvents] = useState<Event[]>([]);
   const [sortField, setSortField] = useState<"eventId" | "dateTime">("eventId");
@@ -43,6 +38,7 @@ const Event = () => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 10;
+  const navigate = useNavigate();
 
   const fetchEvents = async () => {
     try {
@@ -142,12 +138,15 @@ const Event = () => {
           return;
         }
 
-        await axios.delete(`http://localhost:8085/api/admin/events/${eventId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        });
+        await axios.delete(
+          `http://localhost:8085/api/admin/events/${eventId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
         const updated = events.filter((event) => event.eventId !== eventId);
         setEvents(updated);
@@ -161,18 +160,19 @@ const Event = () => {
   };
 
   const handleShowDetail = (event: Event) => {
-    setSelectedEvent(event);
-    setShowDetailModal(true);
+    navigate(`/dashboard/event/${event.eventId}`);
   };
 
   const handleShowUpdate = (event: Event) => {
-    setSelectedEvent(event);
-    setShowUpdateModal(true);
+    navigate(`/dashboard/event/edit/${event.eventId}`);
   };
 
   const indexOfLastEvent = currentPage * eventsPerPage;
   const indexOfFirstEvent = indexOfLastEvent - eventsPerPage;
-  const currentEvents = filteredEvents.slice(indexOfFirstEvent, indexOfLastEvent);
+  const currentEvents = filteredEvents.slice(
+    indexOfFirstEvent,
+    indexOfLastEvent
+  );
   const totalPages = Math.ceil(filteredEvents.length / eventsPerPage);
 
   const handlePageChange = (page: number) => {
@@ -214,9 +214,7 @@ const Event = () => {
       <ToastContainer />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
         <div>
-          <h3 className="text-xl font-semibold text-black">
-            Event Management
-          </h3>
+          <h3 className="text-xl font-semibold text-black">Event Management</h3>
           <h3 className="text-l text-gray-500 mt-2">
             A list of events in the app
           </h3>
@@ -244,14 +242,22 @@ const Event = () => {
             className="px-3 py-2 rounded bg-green-500 text-white"
             title="Sắp xếp theo ID"
           >
-            {sortField === "eventId" && sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
+            {sortField === "eventId" && sortDirection === "asc" ? (
+              <FaSortAmountUp />
+            ) : (
+              <FaSortAmountDown />
+            )}
           </button>
           <button
             onClick={() => handleSort("dateTime")}
             className="px-3 py-2 rounded bg-amber-700 text-white"
             title="Sắp xếp theo Date & Time"
           >
-            {sortField === "dateTime" && sortDirection === "asc" ? <LuClockArrowUp /> : <LuClockArrowDown />}
+            {sortField === "dateTime" && sortDirection === "asc" ? (
+              <LuClockArrowUp />
+            ) : (
+              <LuClockArrowDown />
+            )}
           </button>
         </div>
       </div>
@@ -278,10 +284,14 @@ const Event = () => {
                   <tr key={event.eventId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 border-b">{event.eventId}</td>
                     <td className="px-6 py-4 border-b">{event.name}</td>
-                    <td className="px-6 py-4 border-b">{formatDate(event.date)}</td>
+                    <td className="px-6 py-4 border-b">
+                      {formatDate(event.date)}
+                    </td>
                     <td className="px-6 py-4 border-b">{event.time}</td>
                     <td className="px-6 py-4 border-b">{event.location}</td>
-                    <td className="px-6 py-4 border-b">{renderStatusWithBackground(event.status)}</td>
+                    <td className="px-6 py-4 border-b">
+                      {renderStatusWithBackground(event.status)}
+                    </td>
                     <td className="px-6 py-4 border-b text-center space-x-2">
                       <button
                         onClick={() => handleShowUpdate(event)}
@@ -336,9 +346,7 @@ const Event = () => {
               key={page}
               onClick={() => handlePageChange(page)}
               className={`px-4 py-2 rounded ${
-                currentPage === page
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-300"
+                currentPage === page ? "bg-blue-500 text-white" : "bg-gray-300"
               }`}
             >
               {page}
@@ -354,96 +362,13 @@ const Event = () => {
         </div>
       )}
 
-      <button
-        onClick={() => setShowCreateModal(true)}
+      <Link
+        to="/dashboard/event/create"
         className="fixed bottom-6 right-6 bg-yellow-500 text-white p-4 rounded-full shadow-lg hover:bg-yellow-600"
         title="Thêm sự kiện"
       >
         <FaPlus />
-      </button>
-
-      {showDetailModal && selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
-            <h3 className="text-2xl font-semibold mb-4 text-indigo-700 border-b pb-2">
-              📄 Chi tiết sự kiện
-            </h3>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-              <div><strong>ID:</strong> {selectedEvent.eventId}</div>
-              <div><strong>Category ID:</strong> {selectedEvent.categoryId}</div>
-              <div><strong>Organizer ID:</strong> {selectedEvent.organizerId}</div>
-              <div><strong>Map Template ID:</strong> {selectedEvent.mapTemplateId}</div>
-              <div><strong>Name:</strong> {selectedEvent.name}</div>
-              <div><strong>Date:</strong> {selectedEvent.date}</div>
-              <div><strong>Time:</strong> {selectedEvent.time}</div>
-              <div><strong>Location:</strong> {selectedEvent.location}</div>
-              <div><strong>Status:</strong> {selectedEvent.status}</div>
-              <div className="md:col-span-2">
-                <strong>Description:</strong>
-                <p className="mt-1 text-gray-600">{selectedEvent.description || "N/A"}</p>
-              </div>
-              <div className="md:col-span-2">
-                <strong>Image:</strong>
-                {selectedEvent.imageUrl ? (
-                  <img
-                    src={selectedEvent.imageUrl}
-                    alt="Event"
-                    className="h-48 mt-2 object-cover rounded border"
-                    onError={(e) =>
-                      (e.currentTarget.src = "https://via.placeholder.com/120?text=N/A")
-                    }
-                  />
-                ) : (
-                  <p className="text-gray-400">N/A</p>
-                )}
-              </div>
-              <div className="md:col-span-2">
-                <strong>Banner URL:</strong>
-                <p className="text-gray-600 break-words">{selectedEvent.bannerUrl || "N/A"}</p>
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Đóng
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showCreateModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-2xl relative">
-            <CreateEvent
-              onEventCreated={() => {
-                fetchEvents();
-                setShowCreateModal(false);
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {showUpdateModal && selectedEvent && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-2xl relative">
-            <UpdateEvent
-              event={selectedEvent}
-              onEventUpdated={() => {
-                fetchEvents();
-                setShowUpdateModal(false);
-
-              }}
-              onCancel={() => setShowUpdateModal(false)}
-            />
-          </div>
-        </div>
-      )}
+      </Link>
     </div>
   );
 };

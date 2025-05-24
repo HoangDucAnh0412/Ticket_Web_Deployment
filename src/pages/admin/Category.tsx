@@ -1,25 +1,33 @@
-import { FaEdit, FaTrash, FaPlus, FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+import {
+  FaEdit,
+  FaTrash,
+  FaPlus,
+  FaSortAmountDown,
+  FaSortAmountUp,
+} from "react-icons/fa";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useCategoryLogic } from "./CategoryLogic";
+import { useCategoryLogic } from "../../components/features/category/CategoryLogic";
 
 const Category = () => {
   const {
-    showModal,
-    setShowModal,
-    isEditMode,
-    setIsEditMode,
-    name,
-    setName,
-    description,
-    setDescription,
-    categories,
+    // State
     filteredCategories,
-    errorMessage,
-    setErrorMessage,
-    sortAsc,
     searchTerm,
-    setSearchTerm,
+    sortAsc,
+    showModal,
+    isEditMode,
+    name,
+    description,
+    errorMessage,
+
+    // Setters
+    setShowModal,
+    setName,
+    setDescription,
+    setErrorMessage,
+
+    // Handlers
     handleSort,
     handleSearch,
     handleAddCategory,
@@ -94,10 +102,7 @@ const Category = () => {
               ))
             ) : (
               <tr>
-                <td
-                  colSpan={4}
-                  className="px-6 py-4 text-center text-gray-500"
-                >
+                <td colSpan={4} className="px-6 py-4 text-center text-gray-500">
                   There are no categories.
                 </td>
               </tr>
@@ -106,10 +111,9 @@ const Category = () => {
         </table>
       </div>
 
-      {/* Nút thêm danh mục */}
+      {/* Add Category Button */}
       <button
         onClick={() => {
-          setIsEditMode(false);
           setName("");
           setDescription("");
           setShowModal(true);
@@ -120,7 +124,7 @@ const Category = () => {
         <FaPlus />
       </button>
 
-      {/* Modal */}
+      {/* Category Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white w-[600px] p-8 rounded-lg shadow-2xl">
