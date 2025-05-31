@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
+import _ from "lodash"; // For debounce
 
 interface User {
   userId: number;
@@ -37,6 +38,16 @@ const User = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for sorting/filtering
+  const [pageInput, setPageInput] = useState<string>((currentPage + 1).toString()); // Separate state for pagination input
+
+  // Debounced search handler
+  const debouncedSearch = useCallback(
+    _.debounce((term: string) => {
+      setSearchTerm(term);
+      setCurrentPage(0); // Reset to first page on new search
+    }, 300),
+    []
+  );
 
   // Fetch users for the current page
   useEffect(() => {
@@ -130,7 +141,7 @@ const User = () => {
     };
 
     fetchAllUsers();
-  }, [sortDirection, pageSize]); // Removed searchTerm from dependencies
+  }, [sortDirection, pageSize]);
 
   // Filter and Sort (applied locally without triggering fetch)
   const filteredAndSortedUsers = [...allUsers]
@@ -149,16 +160,10 @@ const User = () => {
     (currentPage + 1) * pageSize
   );
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    setCurrentPage(0); // Reset to first page on new search
-  };
-
   const handleSort = () => {
     setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     setCurrentPage(0); // Reset to first page on sort
   };
-
 
   const handleDeleteUser = async (userId: number) => {
     const confirm = await Swal.fire({
@@ -198,6 +203,32 @@ const User = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    setPageInput((page + 1).toString()); // Update input value when page changes
+  };
+
+  const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setPageInput(value); // Update the input state as the user types
+  };
+
+  const handlePageInputBlur = () => {
+    const page = parseInt(pageInput) - 1;
+    if (!isNaN(page) && page >= 0 && page < totalPages) {
+      handlePageChange(page);
+    } else {
+      setPageInput((currentPage + 1).toString()); // Reset to current page if invalid
+    }
+  };
+
+  const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      const page = parseInt(pageInput) - 1;
+      if (!isNaN(page) && page >= 0 && page < totalPages) {
+        handlePageChange(page);
+      } else {
+        setPageInput((currentPage + 1).toString()); // Reset to current page if invalid
+      }
+    }
   };
 
   const renderRoleWithBackground = (role: string) => {
@@ -269,7 +300,7 @@ const User = () => {
           <input
             type="text"
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => debouncedSearch(e.target.value)}
             placeholder="Tìm kiếm theo tên hoặc số điện thoại..."
             className="px-4 py-2 border border-gray-300 rounded-md w-64"
           />
@@ -321,7 +352,6 @@ const User = () => {
                     </td>
                     <td className="px-6 py-4 border-b text-center">
                       <div className="flex justify-center space-x-2">
-
                         <Link
                           to={`/dashboard/user/edit/${user.userId}`}
                           className="bg-sky-500 text-white px-3 py-2 rounded hover:bg-sky-600"
@@ -364,7 +394,7 @@ const User = () => {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex justify-center mt-4 gap-2">
+        <div className="flex justify-center items-center mt-4 gap-2">
           <button
             onClick={() => handlePageChange(currentPage - 1)}
             disabled={currentPage === 0}
@@ -372,17 +402,83 @@ const User = () => {
           >
             Previous
           </button>
-          {Array.from({ length: totalPages }, (_, i) => i).map((page) => (
-            <button
-              key={page}
-              onClick={() => handlePageChange(page)}
-              className={`px-4 py-2 rounded ${
-                currentPage === page ? "bg-blue-500 text-white" : "bg-gray-300"
-              }`}
-            >
-              {page + 1}
-            </button>
-          ))}
+
+          {/* Calculate which pages to show */}
+          {(() => {
+            const pages = [];
+            const maxVisiblePages = 4;
+            let startPage = Math.max(
+              0,
+              currentPage - Math.floor(maxVisiblePages / 2)
+            );
+            let endPage = Math.min(
+              totalPages - 1,
+              startPage + maxVisiblePages - 1
+            );
+
+            // Adjust start page if we're near the end
+            if (endPage - startPage + 1 < maxVisiblePages) {
+              startPage = Math.max(0, endPage - maxVisiblePages + 1);
+            }
+
+            // Add first page if not included
+            if (startPage > 0) {
+              pages.push(
+                <button
+                  key={0}
+                  onClick={() => handlePageChange(0)}
+                  className="px-4 py-2 rounded bg-gray-300"
+                >
+                  1
+                </button>
+              );
+              if (startPage > 1) {
+                pages.push(
+                  <span key="start-ellipsis" className="px-2">
+                    ...
+                  </span>
+                );
+              }
+            }
+
+            // Add visible pages
+            for (let i = startPage; i <= endPage; i++) {
+              pages.push(
+                <button
+                  key={i}
+                  onClick={() => handlePageChange(i)}
+                  className={`px-4 py-2 rounded ${
+                    currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              );
+            }
+
+            // Add last page if not included
+            if (endPage < totalPages - 1) {
+              if (endPage < totalPages - 2) {
+                pages.push(
+                  <span key="end-ellipsis" className="px-2">
+                    ...
+                  </span>
+                );
+              }
+              pages.push(
+                <button
+                  key={totalPages - 1}
+                  onClick={() => handlePageChange(totalPages - 1)}
+                  className="px-4 py-2 rounded bg-gray-300"
+                >
+                  {totalPages}
+                </button>
+              );
+            }
+
+            return pages;
+          })()}
+
           <button
             onClick={() => handlePageChange(currentPage + 1)}
             disabled={currentPage === totalPages - 1}
@@ -390,6 +486,19 @@ const User = () => {
           >
             Next
           </button>
+
+          {/* Page input */}
+          <div className="flex items-center gap-2 ml-4">
+            <input
+              type="text" // Changed to text to allow better control
+              value={pageInput}
+              onChange={handlePageInputChange}
+              onBlur={handlePageInputBlur}
+              onKeyPress={handlePageInputKeyPress}
+              className="w-16 px-2 py-2 border border-gray-300 rounded text-center"
+            />
+            <span className="text-gray-600">/ {totalPages}</span>
+          </div>
         </div>
       )}
 

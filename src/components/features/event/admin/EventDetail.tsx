@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import TicketSalePhases from "./TicketSalePhases";
+import MapVisual from "./EventMapVisual";
 
 interface Event {
   eventId: number;
@@ -228,6 +229,12 @@ const EventDetail = () => {
         editingPhase={editingPhase}
         setEditingPhase={setEditingPhase}
       />
+
+        {/* Map Visualization Section */}
+        <MapVisual 
+          eventId={eventId!} 
+          mapTemplateId={event.mapTemplateId} 
+        />
     </div>
   );
 };

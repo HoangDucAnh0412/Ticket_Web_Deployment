@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import OrganizerTicketSalePhases from "./OrganizerTicketSalePhases";
+import OrganizerMapVisual from "./OrganizerEventMapVisual";
 
 interface Event {
   eventId: number;
@@ -215,6 +216,12 @@ const OrganizerEventDetail = () => {
         setOpenPhaseIndex={setOpenPhaseIndex}
         editingPhase={editingPhase}
         setEditingPhase={setEditingPhase}
+      />
+
+      {/* Map Visualization Section */}
+      <OrganizerMapVisual
+        eventId={eventId || ""}
+        mapTemplateId={event.mapTemplateId}
       />
     </div>
   );

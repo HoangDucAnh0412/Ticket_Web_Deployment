@@ -23,11 +23,6 @@ interface EventData {
   areas: Area[];
 }
 
-interface TemplateArea {
-  templateAreaId: number;
-  name: string;
-}
-
 const OrganizerCreateEvent: React.FC = () => {
   const navigate = useNavigate();
   const initialEventData: EventData = {
@@ -85,8 +80,6 @@ const OrganizerCreateEvent: React.FC = () => {
       setTemplateAreas([]);
       return;
     }
-    const token = localStorage.getItem("token");
-    const headers = { Authorization: `Bearer ${token}` };
 
     // Find the selected map template from the already fetched templates
     const selectedTemplate = mapTemplates.find(
@@ -132,9 +125,32 @@ const OrganizerCreateEvent: React.FC = () => {
         toast.error("Khu vực này đã được chọn. Vui lòng chọn khu vực khác.");
         return;
       }
+
+      // Check if selected area is a Stage area
+      const selectedArea = templateAreas.find(
+        (ta) => ta.templateAreaId === selectedAreaId
+      );
+      if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
+        const updated = [...eventData.areas];
+        updated[index] = {
+          ...updated[index],
+          [name]: parsedValue,
+          totalTickets: 0,
+          price: 0,
+        } as Area;
+        setEventData({ ...eventData, areas: updated });
+        return;
+      }
     }
 
     if (index !== undefined && name === "totalTickets") {
+      const selectedArea = templateAreas.find(
+        (ta) => ta.templateAreaId === eventData.areas[index].templateAreaId
+      );
+      if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
+        toast.error("Không thể thay đổi số lượng vé cho khu vực Stage.");
+        return;
+      }
       const tickets = parseFloat(value);
       if (tickets <= 0) {
         toast.error("Tổng số vé phải lớn hơn 0.");
@@ -143,6 +159,13 @@ const OrganizerCreateEvent: React.FC = () => {
     }
 
     if (index !== undefined && name === "price") {
+      const selectedArea = templateAreas.find(
+        (ta) => ta.templateAreaId === eventData.areas[index].templateAreaId
+      );
+      if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
+        toast.error("Không thể thay đổi giá vé cho khu vực Stage.");
+        return;
+      }
       const price = parseFloat(value);
       if (price <= 0) {
         toast.error("Giá vé phải lớn hơn 0.");
@@ -217,13 +240,26 @@ const OrganizerCreateEvent: React.FC = () => {
     }
 
     if (
-      eventData.areas.some(
-        (a) =>
+      eventData.areas.some((a) => {
+        // Skip validation for Stage areas
+        const selectedArea = templateAreas.find(
+          (ta) => ta.templateAreaId === a.templateAreaId
+        );
+        const isStageArea = selectedArea?.name
+          .toLowerCase()
+          .startsWith("stage");
+
+        if (isStageArea) {
+          return !a.name || a.templateAreaId === 0;
+        }
+
+        return (
           !a.name ||
           a.totalTickets <= 0 ||
           a.price <= 0 ||
           a.templateAreaId === 0
-      )
+        );
+      })
     ) {
       toast.error("Thông tin khu vực không hợp lệ. Vui lòng kiểm tra lại.");
       return;
@@ -458,82 +494,97 @@ const OrganizerCreateEvent: React.FC = () => {
             <h3 className="text-lg font-semibold text-gray-800 mb-2">
               Khu vực
             </h3>
-            {eventData.areas.map((area, idx) => (
-              <div
-                key={idx}
-                className="mb-4 p-4 border border-gray-300 rounded-md"
-              >
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Tên khu vực
-                    </label>
-                    <input
-                      type="text"
-                      name="name"
-                      placeholder="Tên khu vực"
-                      value={area.name}
-                      onChange={(e) => handleInputChange(e, idx)}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Khu vực template
-                    </label>
-                    <select
-                      name="templateAreaId"
-                      value={area.templateAreaId}
-                      onChange={(e) => handleInputChange(e, idx)}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                    >
-                      <option value={0}>Chọn khu vực</option>
-                      {templateAreas.map((ta) => (
-                        <option
-                          key={ta.templateAreaId}
-                          value={ta.templateAreaId}
-                        >
-                          {ta.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Tổng số vé
-                    </label>
-                    <input
-                      type="number"
-                      name="totalTickets"
-                      placeholder="Tổng số vé"
-                      value={area.totalTickets}
-                      onChange={(e) => handleInputChange(e, idx)}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">
-                      Giá vé
-                    </label>
-                    <input
-                      type="number"
-                      name="price"
-                      placeholder="Giá vé"
-                      value={area.price}
-                      onChange={(e) => handleInputChange(e, idx)}
-                      className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
-                    />
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => handleRemoveArea(idx)}
-                  className="mt-2 text-red-600 hover:text-red-800"
+            {eventData.areas.map((area, idx) => {
+              const selectedTemplateArea = templateAreas.find(
+                (ta) => ta.templateAreaId === area.templateAreaId
+              );
+              const isStageArea = selectedTemplateArea?.name
+                .toLowerCase()
+                .startsWith("stage");
+
+              return (
+                <div
+                  key={idx}
+                  className="mb-4 p-4 border border-gray-300 rounded-md"
                 >
-                  Xóa khu vực
-                </button>
-              </div>
-            ))}
+                  <div className="grid md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Tên khu vực
+                      </label>
+                      <input
+                        type="text"
+                        name="name"
+                        placeholder="Tên khu vực"
+                        value={area.name}
+                        onChange={(e) => handleInputChange(e, idx)}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Khu vực template
+                      </label>
+                      <select
+                        name="templateAreaId"
+                        value={area.templateAreaId}
+                        onChange={(e) => handleInputChange(e, idx)}
+                        className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                      >
+                        <option value={0}>Chọn khu vực</option>
+                        {templateAreas.map((ta) => (
+                          <option
+                            key={ta.templateAreaId}
+                            value={ta.templateAreaId}
+                          >
+                            {ta.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Tổng số vé
+                      </label>
+                      <input
+                        type="number"
+                        name="totalTickets"
+                        placeholder="Tổng số vé"
+                        value={area.totalTickets}
+                        onChange={(e) => handleInputChange(e, idx)}
+                        disabled={isStageArea}
+                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${
+                          isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
+                        }`}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">
+                        Giá vé
+                      </label>
+                      <input
+                        type="number"
+                        name="price"
+                        placeholder="Giá vé"
+                        value={area.price}
+                        onChange={(e) => handleInputChange(e, idx)}
+                        disabled={isStageArea}
+                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${
+                          isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveArea(idx)}
+                    className="mt-2 text-red-600 hover:text-red-800"
+                  >
+                    Xóa khu vực
+                  </button>
+                </div>
+              );
+            })}
             <button
               type="button"
               onClick={handleAddArea}

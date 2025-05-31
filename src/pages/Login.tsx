@@ -63,7 +63,7 @@ function Login() {
           {/* Title with Tickvivo */}
           <div className="text-center">
           <h2 className="text-3xl font-bold text-gray-800 mb-2 mt-5">
-              Create an account
+              Sign in account
             </h2>
             <div className="inline-flex items-center mb-5">
               <span className="text-2xl font-bold text-black">Tick</span>

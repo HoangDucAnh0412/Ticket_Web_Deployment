@@ -2,12 +2,21 @@ import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
 
+interface Vertex {
+  x: number;
+  y: number;
+}
+
 interface TemplateArea {
   name: string;
   x: number;
   y: number;
   width: number;
   height: number;
+  vertices: Vertex[];
+  zone?: string;
+  fillColor?: string;
+  isStage?: boolean;
 }
 
 interface MapTemplateData {
@@ -23,45 +32,115 @@ interface CreateMapTemplateProps {
   onMapCreated: (success: boolean) => void; // Cập nhật prop để nhận tham số success
 }
 
-const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) => {
+const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
+  onMapCreated,
+}) => {
   const initialMapTemplateData: MapTemplateData = {
     name: "",
     description: "",
     areaCount: 0,
     mapWidth: 0,
     mapHeight: 0,
-    areas: [{ name: "", x: 0, y: 0, width: 0, height: 0 }],
+    areas: [
+      {
+        name: "",
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0,
+        vertices: [],
+        isStage: false,
+      },
+    ],
   };
 
-  const [mapTemplate, setMapTemplate] = useState<MapTemplateData>(initialMapTemplateData);
+  const [mapTemplate, setMapTemplate] = useState<MapTemplateData>(
+    initialMapTemplateData
+  );
+
+  const handleAreaInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    areaIdx: number
+  ) => {
+    const { name, value, type } = e.target;
+    let parsedValue: any = value;
+    if (type === "number") {
+      parsedValue = value === "" ? "" : parseFloat(value);
+    }
+    if (type === "checkbox") {
+      parsedValue = (e.target as HTMLInputElement).checked;
+    }
+    const updatedAreas = [...mapTemplate.areas];
+    updatedAreas[areaIdx] = { ...updatedAreas[areaIdx], [name]: parsedValue };
+    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
+  };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-    index?: number
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value, type } = e.target;
+    let parsedValue: any = value;
+    if (type === "number") {
+      parsedValue = value === "" ? "" : parseFloat(value);
+    }
+    setMapTemplate({ ...mapTemplate, [name]: parsedValue });
+  };
+
+  const handleVertexChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    areaIdx: number,
+    vertexIdx: number
   ) => {
     const { name, value } = e.target;
-    const parsedValue =
-      name === "areaCount" || name === "mapWidth" || name === "mapHeight"
-        ? parseInt(value) || 0
-        : value;
+    const parsedValue = value === "" ? "" : parseFloat(value);
+    const updatedAreas = [...mapTemplate.areas];
+    const updatedVertices = [...(updatedAreas[areaIdx].vertices || [])];
+    updatedVertices[vertexIdx] = {
+      ...updatedVertices[vertexIdx],
+      [name]: parsedValue,
+    };
+    updatedAreas[areaIdx].vertices = updatedVertices;
+    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
+  };
 
-    if (index !== undefined) {
-      const updatedAreas = [...mapTemplate.areas];
-      updatedAreas[index] = { ...updatedAreas[index], [name]: parsedValue };
-      setMapTemplate({ ...mapTemplate, areas: updatedAreas });
-    } else {
-      setMapTemplate({ ...mapTemplate, [name]: parsedValue });
-    }
+  const handleAddVertex = (areaIdx: number) => {
+    const updatedAreas = [...mapTemplate.areas];
+    updatedAreas[areaIdx].vertices = [
+      ...(updatedAreas[areaIdx].vertices || []),
+      { x: 0, y: 0 },
+    ];
+    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
+  };
+
+  const handleRemoveVertex = (areaIdx: number, vertexIdx: number) => {
+    const updatedAreas = [...mapTemplate.areas];
+    updatedAreas[areaIdx].vertices = updatedAreas[areaIdx].vertices.filter(
+      (_, i) => i !== vertexIdx
+    );
+    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
   };
 
   const handleAddArea = () => {
     if (mapTemplate.areas.length >= mapTemplate.areaCount) {
-      toast.error(`Không thể thêm khu vực. Template chỉ hỗ trợ tối đa ${mapTemplate.areaCount} khu vực.`);
+      toast.error(
+        `Không thể thêm khu vực. Template chỉ hỗ trợ tối đa ${mapTemplate.areaCount} khu vực.`
+      );
       return;
     }
     setMapTemplate({
       ...mapTemplate,
-      areas: [...mapTemplate.areas, { name: "", x: 0, y: 0, width: 0, height: 0 }],
+      areas: [
+        ...mapTemplate.areas,
+        {
+          name: "",
+          x: 0,
+          y: 0,
+          width: 0,
+          height: 0,
+          vertices: [],
+          isStage: false,
+        },
+      ],
     });
   };
 
@@ -99,10 +178,13 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
 
     if (
       mapTemplate.areas.some(
-        (area) => area.x < 0 || area.y < 0 || area.width <= 0 || area.height <= 0
+        (area) =>
+          area.x < 0 || area.y < 0 || area.width <= 0 || area.height <= 0
       )
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm hoặc giá trị bằng 0.");
+      toast.error(
+        "Thông tin khu vực không hợp lệ. Không được nhập số âm hoặc giá trị bằng 0."
+      );
       return;
     }
 
@@ -122,13 +204,20 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
         areaCount: mapTemplate.areaCount,
         mapWidth: mapTemplate.mapWidth,
         mapHeight: mapTemplate.mapHeight,
-        areas: mapTemplate.areas.map((area) => ({
-          name: area.name,
-          x: area.x,
-          y: area.y,
-          width: area.width,
-          height: area.height,
-        })),
+        areas: mapTemplate.areas.map((area) => {
+          const areaPayload: any = {
+            name: area.name,
+            x: area.x,
+            y: area.y,
+            width: area.width,
+            height: area.height,
+            vertices: area.vertices || [],
+            fillColor: area.fillColor,
+            zone: area.zone,
+          };
+          if (area.isStage) areaPayload.isStage = true;
+          return areaPayload;
+        }),
       };
 
       const response = await axios.post(
@@ -142,7 +231,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
         }
       );
 
-      toast.success(`Template map đã được tạo thành công với ID: ${response.data.templateId}`);
+      toast.success(
+        `Template map đã được tạo thành công với ID: ${response.data.templateId}`
+      );
       setMapTemplate(initialMapTemplateData);
       setTimeout(() => {
         onMapCreated(true); // Truyền true để báo tạo thành công
@@ -163,12 +254,16 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">Tạo Template Map Mới</h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">
+        Tạo Template Map Mới
+      </h2>
 
       <form className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Tên template</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Tên template
+            </label>
             <input
               type="text"
               name="name"
@@ -179,7 +274,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Số lượng khu vực</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Số lượng khu vực
+            </label>
             <input
               type="number"
               name="areaCount"
@@ -193,7 +290,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700">Mô tả</label>
+          <label className="block text-sm font-medium text-gray-700">
+            Mô tả
+          </label>
           <textarea
             name="description"
             value={mapTemplate.description}
@@ -205,7 +304,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700">Chiều rộng map (px)</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Chiều rộng map (px)
+            </label>
             <input
               type="number"
               name="mapWidth"
@@ -217,7 +318,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700">Chiều cao map (px)</label>
+            <label className="block text-sm font-medium text-gray-700">
+              Chiều cao map (px)
+            </label>
             <input
               type="number"
               name="mapHeight"
@@ -233,67 +336,185 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({ onMapCreated }) =
         <div>
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Khu vực</h3>
           {mapTemplate.areas.map((area, idx) => (
-            <div key={idx} className="mb-4 p-4 border border-gray-300 rounded-md">
+            <div
+              key={idx}
+              className="mb-4 p-4 border border-gray-300 rounded-md"
+            >
               <div className="grid md:grid-cols-5 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tên khu vực</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Tên khu vực
+                  </label>
                   <input
                     type="text"
                     name="name"
                     value={area.name}
-                    onChange={(e) => handleInputChange(e, idx)}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
                     required
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tọa độ X</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Zone
+                  </label>
+                  <input
+                    type="text"
+                    name="zone"
+                    value={area.zone || ""}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
+                    className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Tọa độ X
+                  </label>
                   <input
                     type="number"
                     name="x"
                     value={area.x}
-                    onChange={(e) => handleInputChange(e, idx)}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
                     required
                     min="0"
+                    step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tọa độ Y</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Tọa độ Y
+                  </label>
                   <input
                     type="number"
                     name="y"
                     value={area.y}
-                    onChange={(e) => handleInputChange(e, idx)}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
                     required
                     min="0"
+                    step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Chiều rộng</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Chiều rộng
+                  </label>
                   <input
                     type="number"
                     name="width"
                     value={area.width}
-                    onChange={(e) => handleInputChange(e, idx)}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
                     required
                     min="1"
+                    step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Chiều cao</label>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Chiều cao
+                  </label>
                   <input
                     type="number"
                     name="height"
                     value={area.height}
-                    onChange={(e) => handleInputChange(e, idx)}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
                     required
                     min="1"
+                    step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1 text-gray-700">
+                    Màu khu vực
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      name="fillColor"
+                      value={area.fillColor || ""}
+                      onChange={(e) => handleAreaInputChange(e, idx)}
+                      className="block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+                    />
+                    <input
+                      type="color"
+                      value={
+                        area.fillColor &&
+                        /^#[0-9A-Fa-f]{6}$/.test(area.fillColor)
+                          ? area.fillColor
+                          : "#000000"
+                      }
+                      onChange={(e) =>
+                        handleAreaInputChange(
+                          {
+                            ...e,
+                            target: {
+                              ...e.target,
+                              name: "fillColor",
+                              value: e.target.value,
+                            },
+                          } as React.ChangeEvent<HTMLInputElement>,
+                          idx
+                        )
+                      }
+                      className="w-15 h-10 p-0 border-none"
+                      style={{ background: area.fillColor || "#000000" }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Khu vực là STAGE
+                  </label>
+                  <input
+                    type="checkbox"
+                    name="isStage"
+                    checked={!!area.isStage}
+                    onChange={(e) => handleAreaInputChange(e, idx)}
+                    className="mt-1 w-10 h-10"
+                  />
+                </div>
+              </div>
+              <div className="mt-2 ">
+                <label className="block text-sm font-medium text-gray-700">
+                  Vertices (dán JSON array)
+                </label>
+                <textarea
+                  value={JSON.stringify(area.vertices || [], null, 2)}
+                  onChange={(e) => {
+                    try {
+                      const val = e.target.value;
+                      const parsed = JSON.parse(val);
+                      if (
+                        Array.isArray(parsed) &&
+                        parsed.every(
+                          (v) =>
+                            typeof v.x === "number" && typeof v.y === "number"
+                        )
+                      ) {
+                        const updatedAreas = [...mapTemplate.areas];
+                        updatedAreas[idx].vertices = parsed;
+                        setMapTemplate({ ...mapTemplate, areas: updatedAreas });
+                      } else {
+                        toast.error(
+                          "Dữ liệu vertices phải là mảng các object có x, y dạng số."
+                        );
+                      }
+                    } catch {
+                      toast.error(
+                        "Dữ liệu vertices không hợp lệ. Hãy dán đúng định dạng JSON array."
+                      );
+                    }
+                  }}
+                  rows={4}
+                  className="w-full p-2 border border-gray-300 rounded font-mono text-xs"
+                  placeholder='[
+    {"x": 180.305, "y": 320.435},
+    {"x": 464.479, "y": 320.435}
+  ]'
+                />
               </div>
               <button
                 type="button"

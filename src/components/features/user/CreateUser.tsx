@@ -161,19 +161,6 @@ const CreateUser: React.FC = () => {
           return;
         }
       }
-
-      // Nếu không có trùng lặp, tiến hành tạo user
-      const response = await axios.post(
-        "http://localhost:8085/api/admin/users",
-        userData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
       toast.success("Tạo người dùng thành công!");
       setUserData(initialUserData);
       setTimeout(() => {
