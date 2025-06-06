@@ -10,10 +10,10 @@ interface Vertex {
 interface Area {
   templateAreaId: number;
   name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number | null;
+  y: number | null;
+  width: number | null;
+  height: number | null;
   vertices: Vertex[];
   zone?: string;
   fillColor?: string;
@@ -59,7 +59,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
     let parsedValue: any = value;
 
     if (type === "number") {
-      parsedValue = value === "" ? "" : parseFloat(value);
+      parsedValue = value === "" ? null : parseFloat(value);
     }
     if (type === "checkbox") {
       parsedValue = (e.target as HTMLInputElement).checked;
@@ -102,12 +102,13 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
     if (
       updatedTemplate.areas.some(
         (area) =>
-          area.x < 0 || area.y < 0 || area.width <= 0 || area.height <= 0
+          (area.x !== null && area.x < 0) ||
+          (area.y !== null && area.y < 0) ||
+          (area.width !== null && area.width < 0) ||
+          (area.height !== null && area.height < 0)
       )
     ) {
-      toast.error(
-        "Thông tin khu vực không hợp lệ. Không được nhập số âm hoặc giá trị bằng 0."
-      );
+      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm.");
       return;
     }
 
@@ -146,13 +147,14 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       const areaUpdatePromises = updatedTemplate.areas.map((area) => {
         const areaPayload = {
           name: area.name,
-          x: area.x,
-          y: area.y,
-          width: area.width,
-          height: area.height,
+          x: area.x === null ? 0 : area.x,
+          y: area.y === null ? 0 : area.y,
+          width: area.width === null ? 0 : area.width,
+          height: area.height === null ? 0 : area.height,
           vertices: area.vertices || [],
           zone: area.zone || "",
           fillColor: area.fillColor || "#000000",
+          isStage: area.isStage || false,
         };
 
         return axios.put(
@@ -188,6 +190,39 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       const msg = err.response?.data?.message || err.message;
       toast.error(`Có lỗi xảy ra: ${msg}`);
       onUpdate(false);
+    }
+  };
+
+  const handleDeleteArea = async (areaId: number) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      toast.error("Không tìm thấy token xác thực.");
+      return;
+    }
+
+    try {
+      await axios.delete(
+        `http://localhost:8085/api/admin/map-templates/${template.templateId}/areas/${areaId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Cập nhật state sau khi xóa
+      setUpdatedTemplate({
+        ...updatedTemplate,
+        areas: updatedTemplate.areas.filter(
+          (area) => area.templateAreaId !== areaId
+        ),
+        areaCount: updatedTemplate.areaCount - 1,
+      });
+
+      toast.success("Xóa khu vực thành công!");
+    } catch (err: any) {
+      const msg = err.response?.data?.message || err.message;
+      toast.error(`Có lỗi xảy ra khi xóa khu vực: ${msg}`);
     }
   };
 
@@ -293,8 +328,28 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
           {updatedTemplate.areas.map((area, idx) => (
             <div
               key={area.templateAreaId}
-              className="mb-4 p-4 border border-gray-300 rounded-md"
+              className="mb-4 p-4 border border-gray-300 rounded-md relative"
             >
+              <button
+                type="button"
+                onClick={() => handleDeleteArea(area.templateAreaId)}
+                className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                  />
+                </svg>
+              </button>
               <div className="grid md:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -340,9 +395,8 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="x"
-                    value={area.x}
+                    value={area.x === null ? "" : area.x}
                     onChange={(e) => handleInputChange(e, idx)}
-                    required
                     min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
@@ -355,9 +409,8 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="y"
-                    value={area.y}
+                    value={area.y === null ? "" : area.y}
                     onChange={(e) => handleInputChange(e, idx)}
-                    required
                     min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
@@ -370,10 +423,9 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="width"
-                    value={area.width}
+                    value={area.width === null ? "" : area.width}
                     onChange={(e) => handleInputChange(e, idx)}
-                    required
-                    min="1"
+                    min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
@@ -385,10 +437,9 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="height"
-                    value={area.height}
+                    value={area.height === null ? "" : area.height}
                     onChange={(e) => handleInputChange(e, idx)}
-                    required
-                    min="1"
+                    min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />

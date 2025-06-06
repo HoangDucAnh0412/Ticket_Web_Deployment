@@ -12,6 +12,8 @@ import Category from "./pages/admin/Category";
 import Profile from "./pages/Profile";
 import Event from "./pages/admin/Event";
 import MapTemplate from "./pages/admin/MapTemplate";
+import MapDetail from "./components/features/map/MapDetail";
+import CreateMapArea from "./components/features/map/CreateMapArea";
 import EventDetail from "./components/features/event/admin/EventDetail";
 import CreateEvent from "./components/features/event/admin/CreateEvent";
 import CreateEventPhase from "./components/features/event/admin/CreateEventPhase";
@@ -27,6 +29,8 @@ import OrganizerCreateEvent from "./components/features/event/organizer/Organize
 import CreateEventOrganizerPhase from "./components/features/event/organizer/OrganizerCreateEventPhase";
 import OrganizerUpdateEvent from "./components/features/event/organizer/OrganizerUpdateEvent";
 import Register from "./pages/Register";
+import CreateArea from "./components/features/event/admin/CreateArea";
+import OrganizerCreateArea from "./components/features/event/organizer/OrganizerCreateArea";
 
 const App = () => {
   return (
@@ -46,8 +50,11 @@ const App = () => {
           <Route path="event/create" element={<CreateEvent />} />
           <Route path="event/edit/:eventId" element={<UpdateEvent />} />
           <Route path="event/:eventId/phase" element={<CreateEventPhase />} />
+          <Route path="event/:eventId/area" element={<CreateArea />} />
           <Route path="event/:eventId" element={<EventDetail />} />
           <Route path="map" element={<MapTemplate />} />
+          <Route path="map/:id" element={<MapDetail />} />
+          <Route path="map/:id/area" element={<CreateMapArea />} />
           <Route path="profile" element={<Profile />} />
           <Route path="user" element={<User />} />
           <Route path="user/edit/:userId" element={<UpdateUser />} />
@@ -59,9 +66,19 @@ const App = () => {
         <Route path="/organizer/*" element={<OrganizerDashboard />}>
           <Route path="events" element={<OrganizerEvent />} />
           <Route path="events/create" element={<OrganizerCreateEvent />} />
-          <Route path="events/:eventId/edit" element={<OrganizerUpdateEvent />} />
-          <Route path="events/:eventId/phase" element={<CreateEventOrganizerPhase />}/>
+          <Route
+            path="events/:eventId/edit"
+            element={<OrganizerUpdateEvent />}
+          />
+          <Route
+            path="events/:eventId/phase"
+            element={<CreateEventOrganizerPhase />}
+          />
           <Route path="events/:eventId" element={<OrganizerEventDetail />} />
+          <Route
+            path="events/:eventId/area"
+            element={<OrganizerCreateArea />}
+          />
           <Route path="profile" element={<Profile />} />
         </Route>
 

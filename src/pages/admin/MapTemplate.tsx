@@ -11,6 +11,7 @@ import {
   FaSortAmountUp,
 } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 import CreateMapTemplate from "../../components/features/map/CreateMap";
 import UpdateMapTemplate from "../../components/features/map/UpdateMap";
 
@@ -43,11 +44,11 @@ interface MapTemplate {
 }
 
 const MapTemplate = () => {
+  const navigate = useNavigate();
   const [mapTemplates, setMapTemplates] = useState<MapTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<MapTemplate | null>(
     null
   );
-  const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showUpdateModal, setShowUpdateModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -103,8 +104,7 @@ const MapTemplate = () => {
   };
 
   const handleShowDetail = (template: MapTemplate) => {
-    setSelectedTemplate(template);
-    setShowDetailModal(true);
+    navigate(`/dashboard/map/${template.templateId}`);
   };
 
   const handleDeleteTemplate = async (templateId: number) => {
@@ -155,7 +155,7 @@ const MapTemplate = () => {
 
   // Draw Map on Canvas
   useEffect(() => {
-    if (showDetailModal && selectedTemplate && canvasRef.current) {
+    if (selectedTemplate && canvasRef.current) {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
@@ -257,7 +257,7 @@ const MapTemplate = () => {
         });
       }
     }
-  }, [showDetailModal, selectedTemplate]);
+  }, [selectedTemplate]);
 
   return (
     <div className="p-6 bg-white min-h-screen relative">
@@ -298,14 +298,24 @@ const MapTemplate = () => {
           <table className="w-full text-sm text-left text-gray-700">
             <thead className="bg-gray-300 text-gray-700 text-sm uppercase">
               <tr>
-                <th className="px-3 py-3 border-b min-w-[80px]">Template ID</th>
-                <th className="px-6 py-3 border-b min-w-[150px]">Name</th>
-                <th className="px-6 py-3 border-b min-w-[120px]">
+                <th className="px-3 py-3 border-b min-w-[80px] truncate">
+                  Template ID
+                </th>
+                <th className="px-6 py-3 border-b min-w-[150px] max-w-[200px] truncate">
+                  Name
+                </th>
+                <th className="px-6 py-3 border-b min-w-[120px] max-w-[250px] truncate">
                   Description
                 </th>
-                <th className="px-6 py-3 border-b min-w-[100px]">Area Count</th>
-                <th className="px-6 py-3 border-b min-w-[100px]">Width</th>
-                <th className="px-6 py-3 border-b min-w-[100px]">Height</th>
+                <th className="px-6 py-3 border-b min-w-[100px] truncate">
+                  Area Count
+                </th>
+                <th className="px-6 py-3 border-b min-w-[100px] truncate">
+                  Width
+                </th>
+                <th className="px-6 py-3 border-b min-w-[100px] truncate">
+                  Height
+                </th>
                 <th className="px-6 py-3 border-b min-w-[150px] text-center">
                   Actions
                 </th>
@@ -315,16 +325,24 @@ const MapTemplate = () => {
               {filteredAndSortedTemplates.length > 0 ? (
                 filteredAndSortedTemplates.map((template) => (
                   <tr key={template.templateId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
                       {template.templateId}
                     </td>
-                    <td className="px-6 py-4 border-b">{template.name}</td>
-                    <td className="px-6 py-4 border-b">
+                    <td className="px-6 py-4 border-b min-w-[150px] max-w-[200px] truncate overflow-hidden whitespace-nowrap">
+                      {template.name}
+                    </td>
+                    <td className="px-6 py-4 border-b min-w-[120px] max-w-[250px] truncate overflow-hidden whitespace-nowrap">
                       {template.description}
                     </td>
-                    <td className="px-6 py-4 border-b">{template.areaCount}</td>
-                    <td className="px-6 py-4 border-b">{template.mapWidth}</td>
-                    <td className="px-6 py-4 border-b">{template.mapHeight}</td>
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
+                      {template.areaCount}
+                    </td>
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
+                      {template.mapWidth}
+                    </td>
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
+                      {template.mapHeight}
+                    </td>
                     <td className="px-6 py-4 border-b text-center space-x-2">
                       <button
                         onClick={() => handleShowUpdate(template)}
@@ -374,128 +392,6 @@ const MapTemplate = () => {
       >
         <FaPlus />
       </button>
-
-      {showDetailModal && selectedTemplate && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
-          <div className="bg-white w-full max-w-6xl max-h-[90vh] overflow-y-auto p-6 rounded-xl shadow-2xl">
-            <h3 className="text-2xl font-semibold mb-4 text-indigo-700 border-b pb-2">
-              📄 Map Template Details
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-700">
-              <div>
-                <strong>Template ID:</strong> {selectedTemplate.templateId}
-              </div>
-              <div>
-                <strong>Name:</strong> {selectedTemplate.name}
-              </div>
-              <div>
-                <strong>Description:</strong> {selectedTemplate.description}
-              </div>
-              <div>
-                <strong>Area Count:</strong> {selectedTemplate.areaCount}
-              </div>
-              <div>
-                <strong>Width:</strong> {selectedTemplate.mapWidth}
-              </div>
-              <div>
-                <strong>Height:</strong> {selectedTemplate.mapHeight}
-              </div>
-              <div className="md:col-span-2">
-                <strong>Area List:</strong>
-                {selectedTemplate.areas.length > 0 ? (
-                  <table className="w-full mt-2 border border-gray-300">
-                    <thead>
-                      <tr className="bg-gray-200 text-left">
-                        <th className="px-4 py-2 border-b">ID</th>
-                        <th className="px-4 py-2 border-b">Name</th>
-                        <th className="px-4 py-2 border-b">X</th>
-                        <th className="px-4 py-2 border-b">Y</th>
-                        <th className="px-4 py-2 border-b">Width</th>
-                        <th className="px-4 py-2 border-b">Height</th>
-                        <th className="px-4 py-2 border-b">Zone</th>
-                        <th className="px-4 py-2 border-b">Vertices</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedTemplate.areas.map((area) => (
-                        <tr key={area.templateAreaId} className="text-left">
-                          <td className="px-4 py-2 border-b">
-                            {area.templateAreaId}
-                          </td>
-                          <td className="px-4 py-2 border-b">{area.name}</td>
-                          <td className="px-4 py-2 border-b">{area.x}</td>
-                          <td className="px-4 py-2 border-b">{area.y}</td>
-                          <td className="px-4 py-2 border-b">{area.width}</td>
-                          <td className="px-4 py-2 border-b">{area.height}</td>
-                          <td className="px-4 py-2 border-b">{area.zone}</td>
-                          <td className="px-4 py-2 border-b">
-                            <div className="max-h-32 overflow-y-auto">
-                              {area.vertices.map((vertex, index) => (
-                                <div key={index} className="text-sm">
-                                  Point {index + 1}: ({vertex.x}, {vertex.y})
-                                </div>
-                              ))}
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                ) : (
-                  <p className="text-gray-500 mt-2">No areas available.</p>
-                )}
-              </div>
-            </div>
-
-            {/* Canvas for Map Visualization */}
-            <div className="mt-6">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-lg font-semibold text-gray-800">
-                  Map Visualization
-                </h4>
-                <div className="flex flex-wrap gap-4">
-                  {selectedTemplate && selectedTemplate.areas && (
-                    <>
-                      {selectedTemplate.areas
-                        .filter(
-                          (area, index, self) =>
-                            index ===
-                            self.findIndex(
-                              (a) => a.fillColor === area.fillColor
-                            )
-                        )
-                        .map((area, index) => (
-                          <div key={index} className="flex items-center">
-                            <div
-                              className="w-4 h-4 mr-2"
-                              style={{ backgroundColor: area.fillColor }}
-                            ></div>
-                            <span className="text-sm">{area.zone}</span>
-                          </div>
-                        ))}
-                    </>
-                  )}
-                </div>
-              </div>
-              <div className="relative">
-                <canvas
-                  ref={canvasRef}
-                  className="border border-gray-300 rounded-lg shadow-md w-full"
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end mt-6">
-              <button
-                onClick={() => setShowDetailModal(false)}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">

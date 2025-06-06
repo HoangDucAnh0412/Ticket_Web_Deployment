@@ -3,6 +3,9 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import TicketSalePhases from "./TicketSalePhases";
 import MapVisual from "./EventMapVisual";
+import EventAreas from "./EventAreas";
+import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 interface Event {
   eventId: number;
@@ -131,6 +134,26 @@ const EventDetail = () => {
     }
   };
 
+  const handleDescriptionClick = () => {
+    Swal.fire({
+      title: "Event Description",
+      html: `<div class="text-left p-4 whitespace-pre-wrap text-base leading-relaxed">${event?.description}</div>`,
+      width: "1200px",
+      padding: "2em",
+      customClass: {
+        container: "description-modal",
+        popup: "description-modal-popup",
+        title: "text-xl font-bold mb-4",
+      },
+      showCloseButton: true,
+      showConfirmButton: false,
+      background: "#fff",
+      backdrop: `
+        rgba(0,0,0,0.4)
+      `,
+    });
+  };
+
   if (loading) return <div className="p-8">Loading...</div>;
   if (!event) return <div className="p-8 text-red-500">Event not found.</div>;
 
@@ -201,6 +224,15 @@ const EventDetail = () => {
             <span className="bg-gray-100 border border-gray-300 px-3 py-1 rounded-full text-gray-700 font-semibold text-xs min-w-[100px] text-center">
               Organizer ID: <b>{event.organizerId}</b>
             </span>
+            <div
+              className="bg-gray-100 border border-gray-300 px-3 py-1 rounded-full text-gray-700 font-semibold text-xs min-w-[100px] text-center cursor-pointer hover:bg-gray-200 transition-colors"
+              onClick={handleDescriptionClick}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span>Description</span>
+                <FaChevronDown size={12} />
+              </div>
+            </div>
           </div>
 
           {/* Status badge dưới cùng, tách khỏi flex */}
@@ -230,11 +262,11 @@ const EventDetail = () => {
         setEditingPhase={setEditingPhase}
       />
 
-        {/* Map Visualization Section */}
-        <MapVisual 
-          eventId={eventId!} 
-          mapTemplateId={event.mapTemplateId} 
-        />
+      {/* Areas Section */}
+      <EventAreas eventId={eventId!} />
+
+      {/* Map Visualization Section */}
+      <MapVisual eventId={eventId!} mapTemplateId={event.mapTemplateId} />
     </div>
   );
 };

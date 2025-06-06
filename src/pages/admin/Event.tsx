@@ -267,12 +267,22 @@ const Event = () => {
           <table className="w-full text-sm text-left text-gray-700">
             <thead className="bg-gray-300 text-gray-700 text-sm uppercase">
               <tr>
-                <th className="px-6 py-3 border-b min-w-[80px]">ID</th>
-                <th className="px-6 py-3 border-b min-w-[150px]">Name</th>
-                <th className="px-6 py-3 border-b min-w-[120px]">Date</th>
-                <th className="px-6 py-3 border-b min-w-[100px]">Time</th>
-                <th className="px-6 py-3 border-b min-w-[150px]">Location</th>
-                <th className="px-6 py-3 border-b min-w-[100px]">Status</th>
+                <th className="px-6 py-3 border-b min-w-[80px] truncate">ID</th>
+                <th className="px-6 py-3 border-b min-w-[120px] max-w-[200px] truncate">
+                  Name
+                </th>
+                <th className="px-6 py-3 border-b min-w-[120px] truncate">
+                  Date
+                </th>
+                <th className="px-6 py-3 border-b min-w-[100px] truncate">
+                  Time
+                </th>
+                <th className="px-6 py-3 border-b min-w-[100px] max-w-[200px] truncate">
+                  Location
+                </th>
+                <th className="px-6 py-3 border-b min-w-[100px] truncate">
+                  Status
+                </th>
                 <th className="px-6 py-3 border-b min-w-[150px] text-center">
                   Actions
                 </th>
@@ -282,14 +292,22 @@ const Event = () => {
               {currentEvents.length > 0 ? (
                 currentEvents.map((event) => (
                   <tr key={event.eventId} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 border-b">{event.eventId}</td>
-                    <td className="px-6 py-4 border-b">{event.name}</td>
-                    <td className="px-6 py-4 border-b">
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
+                      {event.eventId}
+                    </td>
+                    <td className="px-6 py-4 border-b min-w-[120px] max-w-[200px] truncate overflow-hidden whitespace-nowrap">
+                      {event.name}
+                    </td>
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
                       {formatDate(event.date)}
                     </td>
-                    <td className="px-6 py-4 border-b">{event.time}</td>
-                    <td className="px-6 py-4 border-b">{event.location}</td>
-                    <td className="px-6 py-4 border-b">
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
+                      {event.time}
+                    </td>
+                    <td className="px-6 py-4 border-b min-w-[100px] max-w-[200px] truncate overflow-hidden whitespace-nowrap">
+                      {event.location}
+                    </td>
+                    <td className="px-6 py-4 border-b truncate overflow-hidden whitespace-nowrap">
                       {renderStatusWithBackground(event.status)}
                     </td>
                     <td className="px-6 py-4 border-b text-center space-x-2">

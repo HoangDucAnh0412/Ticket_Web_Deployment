@@ -212,19 +212,17 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
       index === self.findIndex((a) => a.fillColor === area.fillColor)
   );
 
-  // Count unique areas based on name and price (only count areas with price > 0)
+  // Count unique areas based on name and price
   const uniqueAreas = eventAreas.reduce((acc, area) => {
-    if (area.price > 0) {
-      const key = `${area.name}_${area.price}`;
-      if (!acc[key]) {
-        acc[key] = {
-          name: area.name,
-          price: area.price,
-          count: 1,
-        };
-      } else {
-        acc[key].count++;
-      }
+    const key = `${area.name}_${area.price}`;
+    if (!acc[key]) {
+      acc[key] = {
+        name: area.name,
+        price: area.price,
+        count: 1,
+      };
+    } else {
+      acc[key].count++;
     }
     return acc;
   }, {} as Record<string, { name: string; price: number; count: number }>);

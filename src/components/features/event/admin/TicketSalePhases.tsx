@@ -14,16 +14,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
 
-interface Area {
-  areaId: number;
-  eventId: number;
-  templateAreaId: number;
-  name: string;
-  totalTickets: number;
-  availableTickets: number;
-  price: number;
-}
-
 interface Phase {
   phaseId: number;
   eventId: number;
@@ -42,13 +32,6 @@ interface EditablePhase {
   endTime: string;
   ticketsAvailable: number;
   areaId: number;
-}
-
-interface EditableArea {
-  areaId: number;
-  name: string;
-  totalTickets: number;
-  price: number;
 }
 
 interface TicketSalePhasesProps {
@@ -71,29 +54,9 @@ const TicketSalePhases = ({
   setEditingPhase,
 }: TicketSalePhasesProps) => {
   const navigate = useNavigate();
-  const [areas, setAreas] = useState<Area[]>([]);
-  const [editingArea, setEditingArea] = useState<EditableArea | null>(null);
-  const [openNestedPhaseId, setOpenNestedPhaseId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const fetchAreas = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const response = await axios.get(
-          `http://localhost:8085/api/admin/events/${eventId}/areas`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setAreas(response.data.data);
-      } catch (error) {
-        console.error("Error fetching areas:", error);
-        toast.error("Failed to fetch area information");
-      }
-    };
-
-    fetchAreas();
-  }, [eventId]);
+  const [openNestedPhaseId, setOpenNestedPhaseId] = useState<number | null>(
+    null
+  );
 
   const formatDateTime = (dateTimeStr: string) => {
     const date = new Date(dateTimeStr);
@@ -157,7 +120,7 @@ const TicketSalePhases = ({
       }
 
       // Update phase
-      const phaseResponse = await axios.put(
+      await axios.put(
         `http://localhost:8085/api/admin/events/phases/${editingPhase.phaseId}`,
         {
           startTime: editingPhase.startTime,
@@ -173,45 +136,17 @@ const TicketSalePhases = ({
         }
       );
 
-      // Update area if editingArea exists
-      if (editingArea) {
-        await axios.put(
-          `http://localhost:8085/api/admin/events/${eventId}/areas/${editingArea.areaId}`,
-          {
-            name: editingArea.name,
-            totalTickets: editingArea.totalTickets,
-            price: editingArea.price,
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
-
       toast.success("Cập nhật thành công!");
 
       // Update phases state locally to preserve order
       const updatedPhases = phases.map((phase) =>
-        phase.phaseId === editingPhase.phaseId ? { ...phase, ...editingPhase } : phase
+        phase.phaseId === editingPhase.phaseId
+          ? { ...phase, ...editingPhase }
+          : phase
       );
       setPhases(updatedPhases);
 
-      // Update areas state locally to preserve order
-      if (editingArea) {
-        setAreas((prevAreas) =>
-          prevAreas.map((area) =>
-            area.areaId === editingArea.areaId
-              ? { ...area, ...editingArea, availableTickets: area.availableTickets }
-              : area
-          )
-        );
-      }
-
       setEditingPhase(null);
-      setEditingArea(null);
       if (currentIndex !== null) setOpenPhaseIndex(currentIndex); // Restore open state
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
@@ -252,9 +187,16 @@ const TicketSalePhases = ({
         toast.success("Xóa phiên bán vé thành công!");
 
         // Update phases state locally to preserve order
-        const updatedPhases = phases.filter((phase) => phase.phaseId !== phaseId);
+        const updatedPhases = phases.filter(
+          (phase) => phase.phaseId !== phaseId
+        );
         setPhases(updatedPhases);
-        setOpenPhaseIndex(currentIndex !== null && currentIndex < Object.keys(groupedPhases).length - 1 ? currentIndex : null);
+        setOpenPhaseIndex(
+          currentIndex !== null &&
+            currentIndex < Object.keys(groupedPhases).length - 1
+            ? currentIndex
+            : null
+        );
         setOpenNestedPhaseId(null);
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message;
@@ -267,63 +209,6 @@ const TicketSalePhases = ({
     navigate(`/dashboard/event/${eventId}/phase`);
   };
 
-  const handleUpdateArea = (area: Area) => {
-    setEditingArea({
-      areaId: area.areaId,
-      name: area.name,
-      totalTickets: area.totalTickets,
-      price: area.price,
-    });
-  };
-
-  const handleCancelAreaEdit = () => {
-    setEditingArea(null);
-  };
-
-  const handleSaveAreaUpdate = async () => {
-    if (!editingArea) return;
-
-    const currentIndex = openPhaseIndex;
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) {
-        toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
-        return;
-      }
-
-      await axios.put(
-        `http://localhost:8085/api/admin/events/${eventId}/areas/${editingArea.areaId}`,
-        {
-          name: editingArea.name,
-          totalTickets: editingArea.totalTickets,
-          price: editingArea.price,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      toast.success("Cập nhật khu vực thành công!");
-
-      // Update areas state locally to preserve order
-      setAreas((prevAreas) =>
-        prevAreas.map((area) =>
-          area.areaId === editingArea.areaId
-            ? { ...area, ...editingArea, availableTickets: area.availableTickets }
-            : area
-        )
-      );
-      setEditingArea(null);
-      if (currentIndex !== null) setOpenPhaseIndex(currentIndex); // Restore open state
-    } catch (err: any) {
-      const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
-    }
-  };
-
   const renderPhaseDetails = (phase: Phase) => (
     <div className="mt-2">
       <div className="flex flex-col md:flex-row gap-4">
@@ -331,39 +216,12 @@ const TicketSalePhases = ({
           <label className="block text-gray-600 text-sm mb-1">
             Tên khu vực
           </label>
-          {editingPhase?.phaseId === phase.phaseId ? (
-            <input
-              type="text"
-              value={
-                editingArea?.name ||
-                areas.find((a) => a.areaId === phase.areaId)?.name ||
-                ""
-              }
-              onChange={(e) =>
-                setEditingArea({
-                  ...(editingArea || {
-                    areaId: phase.areaId,
-                    name:
-                      areas.find((a) => a.areaId === phase.areaId)?.name || "",
-                    totalTickets:
-                      areas.find((a) => a.areaId === phase.areaId)
-                        ?.totalTickets || 0,
-                    price:
-                      areas.find((a) => a.areaId === phase.areaId)?.price || 0,
-                  }),
-                  name: e.target.value,
-                })
-              }
-              className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          ) : (
-            <input
-              type="text"
-              value={phase.areaName}
-              readOnly
-              className="w-full px-3 py-2 border rounded bg-gray-100"
-            />
-          )}
+          <input
+            type="text"
+            value={phase.areaName}
+            readOnly
+            className="w-full px-3 py-2 border rounded bg-gray-100"
+          />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 text-sm mb-1">
@@ -415,114 +273,32 @@ const TicketSalePhases = ({
             />
           )}
         </div>
+        <div className="flex-1">
+          <label className="block text-gray-600 text-sm mb-1">
+            Tổng số vé trong phiên
+          </label>
+          {editingPhase?.phaseId === phase.phaseId ? (
+            <input
+              type="number"
+              value={editingPhase.ticketsAvailable}
+              onChange={(e) =>
+                setEditingPhase({
+                  ...editingPhase,
+                  ticketsAvailable: parseInt(e.target.value) || 0,
+                })
+              }
+              className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          ) : (
+            <input
+              type="text"
+              value={phase.ticketsAvailable}
+              readOnly
+              className="w-full px-3 py-2 border rounded bg-gray-100"
+            />
+          )}
+        </div>
       </div>
-
-      {/* Area Information */}
-      {areas
-        .filter((a) => a.areaId === phase.areaId)
-        .map((area) => (
-          <div
-            key={area.areaId}
-            className="mt-4 flex flex-col md:flex-row gap-4"
-          >
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Tổng số vé trong sự kiện
-              </label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingArea?.totalTickets || area.totalTickets}
-                  onChange={(e) =>
-                    setEditingArea({
-                      ...(editingArea || {
-                        areaId: area.areaId,
-                        name: area.name,
-                        totalTickets: area.totalTickets,
-                        price: area.price,
-                      }),
-                      totalTickets: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={area.totalTickets}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Số vé còn lại
-              </label>
-              <input
-                type="text"
-                value={area.availableTickets}
-                readOnly
-                className="w-full px-3 py-2 border rounded bg-gray-100"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Tổng số vé trong phiên
-              </label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingPhase.ticketsAvailable}
-                  onChange={(e) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      ticketsAvailable: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={phase.ticketsAvailable}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Giá vé
-              </label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingArea?.price || area.price}
-                  onChange={(e) =>
-                    setEditingArea({
-                      ...(editingArea || {
-                        areaId: area.areaId,
-                        name: area.name,
-                        totalTickets: area.totalTickets,
-                        price: area.price,
-                      }),
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={area.price.toLocaleString("vi-VN") + " VND"}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-          </div>
-        ))}
       <div className="flex justify-end gap-2 mt-2">
         {editingPhase?.phaseId === phase.phaseId ? (
           <>
@@ -534,10 +310,7 @@ const TicketSalePhases = ({
               Lưu
             </button>
             <button
-              onClick={() => {
-                setEditingPhase(null);
-                setEditingArea(null);
-              }}
+              onClick={handleCancelEdit}
               className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
             >
               <FaTimes />
@@ -581,7 +354,11 @@ const TicketSalePhases = ({
       </div>
       <div className="flex flex-col gap-4">
         {Object.entries(groupedPhases)
-          .sort(([, a], [, b]) => new Date(a[0].startTime).getTime() - new Date(b[0].startTime).getTime())
+          .sort(
+            ([, a], [, b]) =>
+              new Date(a[0].startTime).getTime() -
+              new Date(b[0].startTime).getTime()
+          )
           .map(([key, groupPhases], index) => {
             const firstPhase = groupPhases[0];
             const isOpen = openPhaseIndex === index;
@@ -620,35 +397,38 @@ const TicketSalePhases = ({
                 {/* Accordion Content */}
                 {isOpen && (
                   <div className="bg-white px-6 py-4 border-t border-gray-200 rounded-b-lg">
-                    {groupPhases.length === 1 ? (
-                      // If only one phase, display full details directly
-                      renderPhaseDetails(groupPhases[0])
-                    ) : (
-                      // If multiple phases, show areaName with nested accordion
-                      groupPhases.map((phase) => {
-                        const isNestedOpen = openNestedPhaseId === phase.phaseId;
-                        return (
-                          <div key={phase.phaseId} className="mb-2">
-                            <div
-                              className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-gray-100 rounded-lg border border-gray-200"
-                              onClick={() =>
-                                setOpenNestedPhaseId(
-                                  isNestedOpen ? null : phase.phaseId
-                                )
-                              }
-                            >
-                              <span className="font-semibold text-base">
-                                {phase.areaName}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                {isNestedOpen ? <FaChevronUp /> : <FaChevronDown />}
+                    {groupPhases.length === 1
+                      ? // If only one phase, display full details directly
+                        renderPhaseDetails(groupPhases[0])
+                      : // If multiple phases, show areaName with nested accordion
+                        groupPhases.map((phase) => {
+                          const isNestedOpen =
+                            openNestedPhaseId === phase.phaseId;
+                          return (
+                            <div key={phase.phaseId} className="mb-2">
+                              <div
+                                className="flex items-center justify-between px-4 py-2 cursor-pointer hover:bg-gray-100 rounded-lg border border-gray-200"
+                                onClick={() =>
+                                  setOpenNestedPhaseId(
+                                    isNestedOpen ? null : phase.phaseId
+                                  )
+                                }
+                              >
+                                <span className="font-semibold text-base">
+                                  {phase.areaName}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                  {isNestedOpen ? (
+                                    <FaChevronUp />
+                                  ) : (
+                                    <FaChevronDown />
+                                  )}
+                                </div>
                               </div>
+                              {isNestedOpen && renderPhaseDetails(phase)}
                             </div>
-                            {isNestedOpen && renderPhaseDetails(phase)}
-                          </div>
-                        );
-                      })
-                    )}
+                          );
+                        })}
                   </div>
                 )}
               </div>

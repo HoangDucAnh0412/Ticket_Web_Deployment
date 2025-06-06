@@ -9,10 +9,10 @@ interface Vertex {
 
 interface TemplateArea {
   name: string;
-  x: number;
-  y: number;
-  width: number;
-  height: number;
+  x: number | null;
+  y: number | null;
+  width: number | null;
+  height: number | null;
   vertices: Vertex[];
   zone?: string;
   fillColor?: string;
@@ -44,10 +44,10 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
     areas: [
       {
         name: "",
-        x: 0,
-        y: 0,
-        width: 0,
-        height: 0,
+        x: null,
+        y: null,
+        width: null,
+        height: null,
         vertices: [],
         isStage: false,
       },
@@ -65,7 +65,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
     const { name, value, type } = e.target;
     let parsedValue: any = value;
     if (type === "number") {
-      parsedValue = value === "" ? "" : parseFloat(value);
+      parsedValue = value === "" ? null : parseFloat(value);
     }
     if (type === "checkbox") {
       parsedValue = (e.target as HTMLInputElement).checked;
@@ -133,10 +133,10 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
         ...mapTemplate.areas,
         {
           name: "",
-          x: 0,
-          y: 0,
-          width: 0,
-          height: 0,
+          x: null,
+          y: null,
+          width: null,
+          height: null,
           vertices: [],
           isStage: false,
         },
@@ -179,12 +179,13 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
     if (
       mapTemplate.areas.some(
         (area) =>
-          area.x < 0 || area.y < 0 || area.width <= 0 || area.height <= 0
+          (area.x !== null && area.x < 0) ||
+          (area.y !== null && area.y < 0) ||
+          (area.width !== null && area.width < 0) ||
+          (area.height !== null && area.height < 0)
       )
     ) {
-      toast.error(
-        "Thông tin khu vực không hợp lệ. Không được nhập số âm hoặc giá trị bằng 0."
-      );
+      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm.");
       return;
     }
 
@@ -373,9 +374,8 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="x"
-                    value={area.x}
+                    value={area.x === null ? "" : area.x}
                     onChange={(e) => handleAreaInputChange(e, idx)}
-                    required
                     min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
@@ -388,9 +388,8 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="y"
-                    value={area.y}
+                    value={area.y === null ? "" : area.y}
                     onChange={(e) => handleAreaInputChange(e, idx)}
-                    required
                     min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
@@ -403,10 +402,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="width"
-                    value={area.width}
+                    value={area.width === null ? "" : area.width}
                     onChange={(e) => handleAreaInputChange(e, idx)}
-                    required
-                    min="1"
+                    min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
@@ -418,10 +416,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                   <input
                     type="number"
                     name="height"
-                    value={area.height}
+                    value={area.height === null ? "" : area.height}
                     onChange={(e) => handleAreaInputChange(e, idx)}
-                    required
-                    min="1"
+                    min="0"
                     step="any"
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   />
@@ -504,7 +501,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                       }
                     } catch {
                       toast.error(
-                        "Dữ liệu vertices không hợp lệ. Hãy dán đúng định dạng JSON array."
+                        "tạo khu vv."
                       );
                     }
                   }}

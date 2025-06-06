@@ -3,6 +3,8 @@ import { useParams, Link } from "react-router-dom";
 import axios from "axios";
 import OrganizerTicketSalePhases from "./OrganizerTicketSalePhases";
 import OrganizerMapVisual from "./OrganizerEventMapVisual";
+import OrganizerEventAreas from "./OrganizerEventAreas";
+import OrganizerCreateArea from "./OrganizerCreateArea";
 
 interface Event {
   eventId: number;
@@ -207,6 +209,8 @@ const OrganizerEventDetail = () => {
         </div>
       </div>
 
+
+
       {/* Ticket Sale Phases Section */}
       <OrganizerTicketSalePhases
         eventId={eventId || ""}
@@ -217,6 +221,9 @@ const OrganizerEventDetail = () => {
         editingPhase={editingPhase}
         setEditingPhase={setEditingPhase}
       />
+      
+      {/* Section: Event Areas for Organizer */}
+      <OrganizerEventAreas eventId={eventId || ""} />
 
       {/* Map Visualization Section */}
       <OrganizerMapVisual
