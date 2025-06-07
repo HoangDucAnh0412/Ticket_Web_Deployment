@@ -14,6 +14,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import CreateMapTemplate from "../../components/features/map/CreateMap";
 import UpdateMapTemplate from "../../components/features/map/UpdateMap";
+import { BASE_URL } from "../../utils/const";
 
 interface Vertex {
   x: number;
@@ -43,6 +44,10 @@ interface MapTemplate {
   message: string | null;
 }
 
+const ADMIN_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
+const ADMIN_MAP_TEMPLATE_DELETE_ENDPOINT = (templateId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}`;
+
 const MapTemplate = () => {
   const navigate = useNavigate();
   const [mapTemplates, setMapTemplates] = useState<MapTemplate[]>([]);
@@ -65,7 +70,7 @@ const MapTemplate = () => {
       }
 
       const response = await axios.get<MapTemplate[]>(
-        "http://localhost:8085/api/admin/map-templates",
+        ADMIN_MAP_TEMPLATES_ENDPOINT,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -127,15 +132,12 @@ const MapTemplate = () => {
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/admin/map-templates/${templateId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.delete(ADMIN_MAP_TEMPLATE_DELETE_ENDPOINT(templateId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         setMapTemplates((prev) =>
           prev.filter((template) => template.templateId !== templateId)

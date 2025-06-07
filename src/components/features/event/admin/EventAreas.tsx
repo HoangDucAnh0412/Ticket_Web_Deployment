@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   areaId: number;
@@ -35,6 +36,14 @@ interface EventAreasProps {
   eventId: string;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas`;
+const ADMIN_EVENT_AREA_UPDATE_ENDPOINT = (eventId: string, areaId: number) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas/${areaId}`;
+const ADMIN_EVENT_AREA_DELETE_ENDPOINT = (eventId: string, areaId: number) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas/${areaId}`;
+
 const EventAreas = ({ eventId }: EventAreasProps) => {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<Area[]>([]);
@@ -52,10 +61,9 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           return;
         }
 
-        const response = await axios.get(
-          `http://localhost:8085/api/admin/events/${eventId}/areas`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const response = await axios.get(ADMIN_EVENT_AREAS_ENDPOINT(eventId), {
+          headers: { Authorization: `Bearer ${token}` },
+        });
         setAreas(response.data.data);
       } catch (error) {
         console.error("Error fetching areas:", error);
@@ -92,7 +100,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
       }
 
       await axios.put(
-        `http://localhost:8085/api/admin/events/${eventId}/areas/${editingArea.areaId}`,
+        ADMIN_EVENT_AREA_UPDATE_ENDPOINT(eventId, editingArea.areaId),
         {
           name: editingArea.name,
           totalTickets: editingArea.totalTickets,
@@ -146,14 +154,11 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/admin/events/${eventId}/areas/${areaId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.delete(ADMIN_EVENT_AREA_DELETE_ENDPOINT(eventId, areaId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         toast.success("Xóa khu vực thành công!");
         setAreas((prevAreas) =>

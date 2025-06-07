@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -41,6 +42,12 @@ interface MapVisualProps {
   mapTemplateId: number;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT = (templateId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}`;
+const ADMIN_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas`;
+
 const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mapTemplate, setMapTemplate] = useState<MapTemplate | null>(null);
@@ -56,11 +63,11 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
 
         const [templateRes, areasRes] = await Promise.all([
           axios.get<MapTemplate>(
-            `http://localhost:8085/api/admin/map-templates/${mapTemplateId}`,
+            ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(mapTemplateId),
             { headers: { Authorization: `Bearer ${token}` } }
           ),
           axios.get<{ data: EventArea[] }>(
-            `http://localhost:8085/api/admin/events/${eventId}/areas`,
+            ADMIN_EVENT_AREAS_ENDPOINT(eventId),
             { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);

@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { jwtDecode } from "jwt-decode";
+import { BASE_URL } from "../utils/const";
 
 function Login() {
   const [login, setLogin] = useState("");
@@ -13,12 +14,14 @@ function Login() {
 
   const navigate = useNavigate();
 
+  const LOGIN_ENDPOINT = `${BASE_URL}/api/auth/login`;
+
   const handleSubmit = async (e: any) => {
     e.preventDefault();
 
     try {
       const response = await axios.post(
-        "http://localhost:8085/api/auth/login",
+        LOGIN_ENDPOINT,
         { login, password },
         {
           headers: {
@@ -62,7 +65,7 @@ function Login() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Title with Tickvivo */}
           <div className="text-center">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2 mt-5">
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 mt-5">
               Sign in account
             </h2>
             <div className="inline-flex items-center mb-5">
@@ -139,8 +142,11 @@ function Login() {
 
           {/* Create an Account Link */}
           <p className="text-center text-gray-600 text-sm mt-4">
-            Don’t have an account?{" "}
-            <Link to="/register" className="text-blue-600 font-bold hover:underline">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-blue-600 font-bold hover:underline"
+            >
               Create an account
             </Link>
           </p>

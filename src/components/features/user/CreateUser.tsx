@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
+import { BASE_URL } from "../../../utils/const";
 
 interface UserData {
   username: string;
@@ -13,6 +14,8 @@ interface UserData {
   phone: string;
   address: string;
 }
+
+const ADMIN_CREATE_USERS_ENDPOINT = `${BASE_URL}/api/admin/users`;
 
 const CreateUser: React.FC = () => {
   const navigate = useNavigate();
@@ -115,60 +118,26 @@ const CreateUser: React.FC = () => {
     }
 
     try {
-      // Kiểm tra trùng lặp trước khi tạo user
-      const checkResponse = await axios.get(
-        "http://localhost:8085/api/admin/users",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      // Gọi API tạo user mới
+      const response = await axios.post(ADMIN_CREATE_USERS_ENDPOINT, userData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
-      if (
-        checkResponse.data &&
-        checkResponse.data.data &&
-        checkResponse.data.data.content
-      ) {
-        const existingUsers = checkResponse.data.data.content;
-
-        // Kiểm tra trùng username
-        const duplicateUsername = existingUsers.find(
-          (user: any) =>
-            user.username.toLowerCase() === userData.username.toLowerCase()
-        );
-        if (duplicateUsername) {
-          toast.error("Tên đăng nhập đã tồn tại!");
-          return;
-        }
-
-        // Kiểm tra trùng email
-        const duplicateEmail = existingUsers.find(
-          (user: any) =>
-            user.email.toLowerCase() === userData.email.toLowerCase()
-        );
-        if (duplicateEmail) {
-          toast.error("Email đã tồn tại!");
-          return;
-        }
-
-        // Kiểm tra trùng số điện thoại
-        const duplicatePhone = existingUsers.find(
-          (user: any) => user.phone === userData.phone
-        );
-        if (duplicatePhone) {
-          toast.error("Số điện thoại đã tồn tại!");
-          return;
-        }
+      if (response.status === 201 || response.status === 200) {
+        toast.success("Tạo người dùng thành công!");
+        setUserData(initialUserData);
+        setTimeout(() => {
+          navigate("/dashboard/user");
+        }, 2000);
       }
-      toast.success("Tạo người dùng thành công!");
-      setUserData(initialUserData);
-      setTimeout(() => {
-        navigate("/dashboard/user");
-      }, 2000);
     } catch (error: any) {
       const msg = error.response?.data?.message || error.message;
-      if (msg.includes("username")) {
+      if (error.response?.status === 403) {
+        toast.error("Vui lòng kiểm tra lại thông tin vì có thể bị trùng lặp!");
+      } else if (msg.includes("username")) {
         toast.error("Tên đăng nhập đã tồn tại!");
       } else if (msg.includes("email")) {
         toast.error("Email đã tồn tại!");

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BASE_URL } from "../../../utils/const";
 
 interface User {
   userId: number;
@@ -22,6 +23,15 @@ const EditUser = () => {
   const [user, setUser] = useState<User | null>(null);
   const [formData, setFormData] = useState<Partial<User>>({});
 
+  const ADMIN_USER_DETAIL_ENDPOINT = (userId: string) =>
+    `${BASE_URL}/api/admin/users/${userId}`;
+  const ADMIN_USER_UPDATE_ENDPOINT = (userId: string) =>
+    `${BASE_URL}/api/admin/users/${userId}`;
+  const ADMIN_USER_ACTIVATE_ENDPOINT = (userId: string) =>
+    `${BASE_URL}/api/admin/users/${userId}/activate`;
+  const ADMIN_USER_DEACTIVATE_ENDPOINT = (userId: string) =>
+    `${BASE_URL}/api/admin/users/${userId}/deactivate`;
+
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -32,14 +42,11 @@ const EditUser = () => {
           return;
         }
 
-        const response = await axios.get(
-          `http://localhost:8085/api/admin/users/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(ADMIN_USER_DETAIL_ENDPOINT(userId!), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.data && response.data.data) {
           setUser(response.data.data);
@@ -76,15 +83,11 @@ const EditUser = () => {
         return;
       }
 
-      await axios.put(
-        `http://localhost:8085/api/admin/users/${userId}`,
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(ADMIN_USER_UPDATE_ENDPOINT(userId!), formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success("Cập nhật thông tin thành công!");
       navigate("/dashboard/user");
@@ -104,8 +107,8 @@ const EditUser = () => {
       }
 
       const endpoint = formData.active
-        ? `http://localhost:8085/api/admin/users/${userId}/deactivate`
-        : `http://localhost:8085/api/admin/users/${userId}/activate`;
+        ? ADMIN_USER_DEACTIVATE_ENDPOINT(userId!)
+        : ADMIN_USER_ACTIVATE_ENDPOINT(userId!);
 
       await axios.put(
         endpoint,

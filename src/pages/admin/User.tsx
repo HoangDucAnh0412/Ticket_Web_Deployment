@@ -13,6 +13,7 @@ import {
 import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
 import _ from "lodash"; // For debounce
+import { BASE_URL } from "../../utils/const";
 
 interface User {
   userId: number;
@@ -27,6 +28,11 @@ interface User {
   updatedAt: string;
 }
 
+const ADMIN_USERS_ENDPOINT = (page: number, size: number) =>
+  `${BASE_URL}/api/admin/users?page=${page}&size=${size}`;
+const ADMIN_USER_DELETE_ENDPOINT = (userId: number) =>
+  `${BASE_URL}/api/admin/users/${userId}`;
+
 const User = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -38,7 +44,9 @@ const User = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for sorting/filtering
-  const [pageInput, setPageInput] = useState<string>((currentPage + 1).toString()); // Separate state for pagination input
+  const [pageInput, setPageInput] = useState<string>(
+    (currentPage + 1).toString()
+  ); // Separate state for pagination input
 
   // Debounced search handler
   const debouncedSearch = useCallback(
@@ -62,7 +70,7 @@ const User = () => {
         }
 
         const response = await axios.get(
-          `http://localhost:8085/api/admin/users?page=${currentPage}&size=${pageSize}`,
+          ADMIN_USERS_ENDPOINT(currentPage, pageSize),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -112,7 +120,7 @@ const User = () => {
 
         do {
           const response = await axios.get(
-            `http://localhost:8085/api/admin/users?page=${page}&size=${pageSize}`,
+            ADMIN_USERS_ENDPOINT(page, pageSize),
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -185,7 +193,7 @@ const User = () => {
           return;
         }
 
-        await axios.delete(`http://localhost:8085/api/admin/users/${userId}`, {
+        await axios.delete(ADMIN_USER_DELETE_ENDPOINT(userId), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -220,7 +228,9 @@ const User = () => {
     }
   };
 
-  const handlePageInputKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handlePageInputKeyPress = (
+    e: React.KeyboardEvent<HTMLInputElement>
+  ) => {
     if (e.key === "Enter") {
       const page = parseInt(pageInput) - 1;
       if (!isNaN(page) && page >= 0 && page < totalPages) {

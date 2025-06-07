@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -41,6 +42,11 @@ interface MapVisualProps {
   mapTemplateId: number;
 }
 
+// Define endpoint constants
+const ORGANIZER_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/organizer/map-templates`;
+const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
+
 const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mapTemplate, setMapTemplate] = useState<MapTemplate | null>(null);
@@ -55,12 +61,11 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
         if (!token) return;
 
         const [templatesRes, areasRes] = await Promise.all([
-          axios.get<MapTemplate[]>(
-            `http://localhost:8085/api/organizer/map-templates`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
+          axios.get<MapTemplate[]>(ORGANIZER_MAP_TEMPLATES_ENDPOINT, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
           axios.get<{ data: EventArea[] }>(
-            `http://localhost:8085/api/organizer/events/${eventId}/areas`,
+            ORGANIZER_EVENT_AREAS_ENDPOINT(eventId),
             { headers: { Authorization: `Bearer ${token}` } }
           ),
         ]);

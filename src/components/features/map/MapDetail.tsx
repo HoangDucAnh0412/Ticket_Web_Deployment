@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa";
+import { BASE_URL } from "../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -32,6 +33,9 @@ interface MapTemplate {
   message: string | null;
 }
 
+const ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT = (id: string | undefined) =>
+  `${BASE_URL}/api/admin/map-templates/${id}`;
+
 const MapDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
@@ -52,7 +56,7 @@ const MapDetail: React.FC = () => {
         }
 
         const response = await axios.get<MapTemplate>(
-          `http://localhost:8085/api/admin/map-templates/${id}`,
+          ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(id),
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { BASE_URL } from "../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -31,6 +32,8 @@ interface MapTemplateData {
 interface CreateMapTemplateProps {
   onMapCreated: (success: boolean) => void; // Cập nhật prop để nhận tham số success
 }
+
+const ADMIN_CREATE_MAP_TEMPLATE_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
 
 const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
   onMapCreated,
@@ -222,7 +225,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
       };
 
       const response = await axios.post(
-        "http://localhost:8085/api/admin/map-templates",
+        ADMIN_CREATE_MAP_TEMPLATE_ENDPOINT,
         payload,
         {
           headers: {
@@ -500,9 +503,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                         );
                       }
                     } catch {
-                      toast.error(
-                        "tạo khu vv."
-                      );
+                      toast.error("tạo khu vv.");
                     }
                   }}
                   rows={4}

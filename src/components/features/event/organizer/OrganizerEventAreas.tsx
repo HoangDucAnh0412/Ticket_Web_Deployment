@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   areaId: number;
@@ -35,6 +36,18 @@ interface EventAreasProps {
   eventId: string;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
+const ORGANIZER_EVENT_AREA_UPDATE_ENDPOINT = (
+  eventId: string,
+  areaId: number
+) => `${BASE_URL}/api/organizer/events/${eventId}/areas/${areaId}`;
+const ORGANIZER_EVENT_AREA_DELETE_ENDPOINT = (
+  eventId: string,
+  areaId: number
+) => `${BASE_URL}/api/organizer/events/${eventId}/areas/${areaId}`;
+
 const OrganizerEventAreas = ({ eventId }: EventAreasProps) => {
   const navigate = useNavigate();
   const [areas, setAreas] = useState<Area[]>([]);
@@ -53,7 +66,7 @@ const OrganizerEventAreas = ({ eventId }: EventAreasProps) => {
         }
 
         const response = await axios.get(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas`,
+          ORGANIZER_EVENT_AREAS_ENDPOINT(eventId),
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setAreas(response.data.data);
@@ -92,7 +105,7 @@ const OrganizerEventAreas = ({ eventId }: EventAreasProps) => {
       }
 
       await axios.put(
-        `http://localhost:8085/api/organizer/events/${eventId}/areas/${editingArea.areaId}`,
+        ORGANIZER_EVENT_AREA_UPDATE_ENDPOINT(eventId, editingArea.areaId),
         {
           name: editingArea.name,
           totalTickets: editingArea.totalTickets,
@@ -147,7 +160,7 @@ const OrganizerEventAreas = ({ eventId }: EventAreasProps) => {
         }
 
         await axios.delete(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas/${areaId}`,
+          ORGANIZER_EVENT_AREA_DELETE_ENDPOINT(eventId, areaId),
           {
             headers: {
               Authorization: `Bearer ${token}`,

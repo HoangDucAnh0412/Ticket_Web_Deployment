@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaCheckCircle, FaLock } from "react-icons/fa";
+import { BASE_URL } from "../../../utils/const";
 
 interface User {
   userId: number;
@@ -17,6 +18,9 @@ interface User {
   createdAt: string;
   updatedAt: string;
 }
+
+const ADMIN_USER_DETAIL_ENDPOINT = (userId: string) =>
+  `${BASE_URL}/api/admin/users/${userId}`;
 
 const UserDetail = () => {
   const { userId } = useParams<{ userId: string }>();
@@ -32,14 +36,11 @@ const UserDetail = () => {
           return;
         }
 
-        const response = await axios.get(
-          `http://localhost:8085/api/admin/users/${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const response = await axios.get(ADMIN_USER_DETAIL_ENDPOINT(userId!), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         if (response.data && response.data.data) {
           setUser(response.data.data);

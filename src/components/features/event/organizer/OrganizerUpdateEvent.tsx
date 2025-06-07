@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Event {
   eventId: number;
@@ -31,6 +32,12 @@ interface MapTemplate {
   description: string;
 }
 
+// Define endpoint constants
+const ORGANIZER_EVENT_DETAIL_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}`;
+const ORGANIZER_CATEGORIES_ENDPOINT = `${BASE_URL}/api/organizer/categories`;
+const ORGANIZER_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/organizer/map-templates`;
+
 const OrganizerUpdateEvent = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
@@ -57,7 +64,7 @@ const OrganizerUpdateEvent = () => {
 
         // Fetch event data
         const eventResponse = await axios.get(
-          `http://localhost:8085/api/organizer/events/${eventId}`,
+          ORGANIZER_EVENT_DETAIL_ENDPOINT(eventId!),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -67,7 +74,7 @@ const OrganizerUpdateEvent = () => {
 
         // Fetch categories
         const categoriesResponse = await axios.get(
-          "http://localhost:8085/api/organizer/categories",
+          ORGANIZER_CATEGORIES_ENDPOINT,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -77,7 +84,7 @@ const OrganizerUpdateEvent = () => {
 
         // Fetch map templates
         const mapTemplatesResponse = await axios.get(
-          "http://localhost:8085/api/organizer/map-templates",
+          ORGANIZER_MAP_TEMPLATES_ENDPOINT,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -172,15 +179,11 @@ const OrganizerUpdateEvent = () => {
         data.append("banner", bannerFile);
       }
 
-      await axios.put(
-        `http://localhost:8085/api/organizer/events/${eventId}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(ORGANIZER_EVENT_DETAIL_ENDPOINT(eventId!), data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success("Cập nhật sự kiện thành công!", {
         position: "top-right",

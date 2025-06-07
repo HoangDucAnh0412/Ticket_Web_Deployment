@@ -5,6 +5,7 @@ import OrganizerTicketSalePhases from "./OrganizerTicketSalePhases";
 import OrganizerMapVisual from "./OrganizerEventMapVisual";
 import OrganizerEventAreas from "./OrganizerEventAreas";
 import OrganizerCreateArea from "./OrganizerCreateArea";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Event {
   eventId: number;
@@ -51,6 +52,14 @@ interface EditablePhase {
   areaId: number;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ORGANIZER_EVENT_DETAIL_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}`;
+const ORGANIZER_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/phases`;
+const ORGANIZER_CATEGORIES_ENDPOINT = `${BASE_URL}/api/organizer/categories`;
+const ORGANIZER_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/organizer/map-templates`;
+
 const OrganizerEventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
@@ -67,24 +76,21 @@ const OrganizerEventDetail = () => {
         const token = localStorage.getItem("token");
         if (!token) return;
         const [eventRes, phasesRes, catRes, mapRes] = await Promise.all([
-          axios.get<Event>(
-            `http://localhost:8085/api/organizer/events/${eventId}`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
-          axios.get<Phase[]>(
-            `http://localhost:8085/api/organizer/events/${eventId}/phases`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          ),
+          axios.get<Event>(ORGANIZER_EVENT_DETAIL_ENDPOINT(eventId || ""), {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get<Phase[]>(ORGANIZER_EVENT_PHASES_ENDPOINT(eventId || ""), {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
           axios
-            .get<Category[]>(`http://localhost:8085/api/organizer/categories`, {
+            .get<Category[]>(ORGANIZER_CATEGORIES_ENDPOINT, {
               headers: { Authorization: `Bearer ${token}` },
             })
             .catch(() => ({ data: [] })),
           axios
-            .get<MapTemplate[]>(
-              `http://localhost:8085/api/organizer/map-templates`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            )
+            .get<MapTemplate[]>(ORGANIZER_MAP_TEMPLATES_ENDPOINT, {
+              headers: { Authorization: `Bearer ${token}` },
+            })
             .catch(() => ({ data: [] })),
         ]);
         setEvent(eventRes.data);
@@ -209,8 +215,6 @@ const OrganizerEventDetail = () => {
         </div>
       </div>
 
-
-
       {/* Ticket Sale Phases Section */}
       <OrganizerTicketSalePhases
         eventId={eventId || ""}
@@ -221,7 +225,7 @@ const OrganizerEventDetail = () => {
         editingPhase={editingPhase}
         setEditingPhase={setEditingPhase}
       />
-      
+
       {/* Section: Event Areas for Organizer */}
       <OrganizerEventAreas eventId={eventId || ""} />
 

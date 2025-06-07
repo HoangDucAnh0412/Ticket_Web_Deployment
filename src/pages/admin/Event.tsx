@@ -13,6 +13,7 @@ import {
 } from "react-icons/fa";
 import { LuClockArrowDown, LuClockArrowUp } from "react-icons/lu";
 import { useNavigate, Link } from "react-router-dom";
+import { BASE_URL } from "../../utils/const";
 
 interface Event {
   eventId: number;
@@ -28,6 +29,10 @@ interface Event {
   bannerUrl: string;
   status: string;
 }
+
+const ADMIN_EVENTS_ENDPOINT = `${BASE_URL}/api/admin/events`;
+const ADMIN_EVENT_DELETE_ENDPOINT = (eventId: number) =>
+  `${BASE_URL}/api/admin/events/${eventId}`;
 
 const Event = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -48,15 +53,12 @@ const Event = () => {
         return;
       }
 
-      const response = await axios.get<Event[]>(
-        "http://localhost:8085/api/admin/events",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get<Event[]>(ADMIN_EVENTS_ENDPOINT, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       setEvents(response.data);
       setFilteredEvents(response.data);
@@ -138,15 +140,12 @@ const Event = () => {
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/admin/events/${eventId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.delete(ADMIN_EVENT_DELETE_ENDPOINT(eventId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         const updated = events.filter((event) => event.eventId !== eventId);
         setEvents(updated);

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BASE_URL } from "../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -20,6 +21,9 @@ interface TemplateArea {
   fillColor?: string;
   isStage?: boolean;
 }
+
+const ADMIN_CREATE_MAP_AREA_ENDPOINT = (id: string | undefined) =>
+  `${BASE_URL}/api/admin/map-templates/${id}/areas`;
 
 const CreateMapArea: React.FC = () => {
   const navigate = useNavigate();
@@ -109,7 +113,7 @@ const CreateMapArea: React.FC = () => {
       console.log("Sending payload to API:", JSON.stringify(payload, null, 2));
 
       const response = await axios.post(
-        `http://localhost:8085/api/admin/map-templates/${id}/areas`,
+        ADMIN_CREATE_MAP_AREA_ENDPOINT(id),
         payload,
         {
           headers: {

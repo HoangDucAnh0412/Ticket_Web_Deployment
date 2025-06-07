@@ -2,12 +2,20 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Swal from "sweetalert2";
 import { toast } from "react-toastify";
+import { BASE_URL } from "../../../utils/const";
 
 interface Category {
   categoryId: number;
   name: string;
   description: string;
 }
+
+const ADMIN_CATEGORIES_ENDPOINT = `${BASE_URL}/api/admin/categories`;
+const ADMIN_CREATE_CATEGORY_ENDPOINT = `${BASE_URL}/api/admin/categories`;
+const ADMIN_UPDATE_CATEGORY_ENDPOINT = (categoryId: number) =>
+  `${BASE_URL}/api/admin/categories/${categoryId}`;
+const ADMIN_DELETE_CATEGORY_ENDPOINT = (categoryId: number) =>
+  `${BASE_URL}/api/admin/categories/${categoryId}`;
 
 export const useCategoryLogic = () => {
   // State management
@@ -33,15 +41,12 @@ export const useCategoryLogic = () => {
         return;
       }
 
-      const response = await axios.get<Category[]>(
-        "http://localhost:8085/api/admin/categories",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get<Category[]>(ADMIN_CATEGORIES_ENDPOINT, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       setCategories(response.data);
       setFilteredCategories(response.data);
@@ -89,7 +94,7 @@ export const useCategoryLogic = () => {
       }
 
       const response = await axios.post<Category>(
-        "http://localhost:8085/api/admin/categories",
+        ADMIN_CREATE_CATEGORY_ENDPOINT,
         { name, description },
         {
           headers: {
@@ -131,7 +136,7 @@ export const useCategoryLogic = () => {
       }
 
       const response = await axios.put<Category>(
-        `http://localhost:8085/api/admin/categories/${editCategoryId}`,
+        ADMIN_UPDATE_CATEGORY_ENDPOINT(editCategoryId),
         { name, description },
         {
           headers: {
@@ -175,15 +180,12 @@ export const useCategoryLogic = () => {
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/admin/categories/${categoryId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.delete(ADMIN_DELETE_CATEGORY_ENDPOINT(categoryId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         const updated = categories.filter(
           (cat) => cat.categoryId !== categoryId

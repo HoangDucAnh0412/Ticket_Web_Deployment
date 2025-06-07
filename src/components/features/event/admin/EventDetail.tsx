@@ -6,6 +6,7 @@ import MapVisual from "./EventMapVisual";
 import EventAreas from "./EventAreas";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import Swal from "sweetalert2";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Event {
   eventId: number;
@@ -52,6 +53,16 @@ interface EditablePhase {
   areaId: number;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_EVENT_DETAIL_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}`;
+const ADMIN_CATEGORIES_ENDPOINT = `${BASE_URL}/api/admin/categories`;
+const ADMIN_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
+const ADMIN_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/phases`;
+const ADMIN_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas`;
+
 const EventDetail = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const [event, setEvent] = useState<Event | null>(null);
@@ -72,28 +83,21 @@ const EventDetail = () => {
         if (!token) return;
         const [eventRes, catRes, mapRes, phasesRes, areasRes] =
           await Promise.all([
-            axios.get<Event>(
-              `http://localhost:8085/api/admin/events/${eventId}`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            ),
-            axios.get<Category[]>(
-              `http://localhost:8085/api/admin/categories`,
-              {
-                headers: { Authorization: `Bearer ${token}` },
-              }
-            ),
-            axios.get<MapTemplate[]>(
-              `http://localhost:8085/api/admin/map-templates`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            ),
-            axios.get<Phase[]>(
-              `http://localhost:8085/api/admin/events/${eventId}/phases`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            ),
-            axios.get(
-              `http://localhost:8085/api/admin/events/${eventId}/areas`,
-              { headers: { Authorization: `Bearer ${token}` } }
-            ),
+            axios.get<Event>(ADMIN_EVENT_DETAIL_ENDPOINT(eventId || ""), {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get<Category[]>(ADMIN_CATEGORIES_ENDPOINT, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get<MapTemplate[]>(ADMIN_MAP_TEMPLATES_ENDPOINT, {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get<Phase[]>(ADMIN_EVENT_PHASES_ENDPOINT(eventId || ""), {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
+            axios.get(ADMIN_EVENT_AREAS_ENDPOINT(eventId || ""), {
+              headers: { Authorization: `Bearer ${token}` },
+            }),
           ]);
         setEvent(eventRes.data);
         setCategories(catRes.data);

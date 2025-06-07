@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link, useParams } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   areaId: number;
@@ -19,6 +20,12 @@ interface Phase {
   areaId: number;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
+const ORGANIZER_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/phases`;
+
 const CreateEventOrganizerPhase: React.FC = () => {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId: string }>();
@@ -34,7 +41,7 @@ const CreateEventOrganizerPhase: React.FC = () => {
         if (!token) return;
 
         const response = await axios.get(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas`,
+          ORGANIZER_EVENT_AREAS_ENDPOINT(eventId || ""),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -100,7 +107,7 @@ const CreateEventOrganizerPhase: React.FC = () => {
     try {
       for (const phase of phases) {
         await axios.post(
-          `http://localhost:8085/api/organizer/events/${eventId}/phases`,
+          ORGANIZER_EVENT_PHASES_ENDPOINT(eventId || ""),
           phase,
           {
             headers: {

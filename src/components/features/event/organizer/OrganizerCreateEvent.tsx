@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   name: string;
@@ -22,6 +23,11 @@ interface EventData {
   status: string;
   areas: Area[];
 }
+
+// Định nghĩa các endpoint rõ ràng
+const ORGANIZER_CATEGORIES_ENDPOINT = `${BASE_URL}/api/organizer/categories`;
+const ORGANIZER_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/organizer/map-templates`;
+const ORGANIZER_EVENTS_ENDPOINT = `${BASE_URL}/api/organizer/events`;
 
 const OrganizerCreateEvent: React.FC = () => {
   const navigate = useNavigate();
@@ -58,14 +64,12 @@ const OrganizerCreateEvent: React.FC = () => {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const fetchCategories = axios.get(
-      "http://localhost:8085/api/organizer/categories",
-      { headers }
-    );
-    const fetchMapTemplates = axios.get(
-      "http://localhost:8085/api/organizer/map-templates",
-      { headers }
-    );
+    const fetchCategories = axios.get(ORGANIZER_CATEGORIES_ENDPOINT, {
+      headers,
+    });
+    const fetchMapTemplates = axios.get(ORGANIZER_MAP_TEMPLATES_ENDPOINT, {
+      headers,
+    });
 
     Promise.all([fetchCategories, fetchMapTemplates])
       .then(([catResp, mapResp]) => {
@@ -281,15 +285,11 @@ const OrganizerCreateEvent: React.FC = () => {
     if (bannerFile) formData.append("banner", bannerFile);
 
     try {
-      const resp = await axios.post(
-        "http://localhost:8085/api/organizer/events",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const resp = await axios.post(ORGANIZER_EVENTS_ENDPOINT, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success(
         `Sự kiện đã được tạo thành công với ID: ${resp.data.eventId}`

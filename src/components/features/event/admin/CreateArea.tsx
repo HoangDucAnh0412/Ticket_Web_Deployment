@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link, useParams } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   name: string;
@@ -15,6 +16,13 @@ interface TemplateArea {
   templateAreaId: number;
   name: string;
 }
+
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
+const ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT = (templateId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}`;
+const ADMIN_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas`;
 
 const CreateArea: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +45,7 @@ const CreateArea: React.FC = () => {
 
     const headers = { Authorization: `Bearer ${token}` };
     axios
-      .get("http://localhost:8085/api/admin/map-templates", { headers })
+      .get(ADMIN_MAP_TEMPLATES_ENDPOINT, { headers })
       .then((resp) => setMapTemplates(resp.data))
       .catch((err) => toast.error(`Không thể tải dữ liệu: ${err.message}`));
   }, []);
@@ -52,10 +60,7 @@ const CreateArea: React.FC = () => {
     const headers = { Authorization: `Bearer ${token}` };
 
     axios
-      .get(
-        `http://localhost:8085/api/admin/map-templates/${selectedTemplateId}`,
-        { headers }
-      )
+      .get(ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(selectedTemplateId), { headers })
       .then((resp) => setTemplateAreas(resp.data.areas || []))
       .catch((err) =>
         toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
@@ -197,11 +202,9 @@ const CreateArea: React.FC = () => {
       };
 
       for (const area of areas) {
-        await axios.post(
-          `http://localhost:8085/api/admin/events/${eventId}/areas`,
-          area,
-          { headers }
-        );
+        await axios.post(ADMIN_EVENT_AREAS_ENDPOINT(eventId || ""), area, {
+          headers,
+        });
       }
 
       toast.success("Tạo khu vực thành công!");
@@ -384,4 +387,3 @@ const CreateArea: React.FC = () => {
 };
 
 export default CreateArea;
- 

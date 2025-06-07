@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { BASE_URL } from "../utils/const";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -18,6 +19,8 @@ function Register() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
   const navigate = useNavigate();
+
+  const REGISTER_ENDPOINT = `${BASE_URL}/api/organizer/register`;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -62,15 +65,11 @@ function Register() {
     }
 
     try {
-      const response = await axios.post(
-        "http://localhost:8085/api/organizer/register",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.post(REGISTER_ENDPOINT, formData, {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
 
       toast.success("Account created successfully! Please sign in.");
       setTimeout(() => {
@@ -79,7 +78,8 @@ function Register() {
     } catch (error: any) {
       console.error("Error:", error);
       toast.error(
-        error.response?.data?.message || "Failed to create account. Please try again."
+        error.response?.data?.message ||
+          "Failed to create account. Please try again."
       );
     }
   };

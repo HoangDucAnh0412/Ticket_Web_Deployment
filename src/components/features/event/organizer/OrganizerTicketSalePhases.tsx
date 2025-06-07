@@ -13,6 +13,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   areaId: number;
@@ -61,6 +62,16 @@ interface OrganizerTicketSalePhasesProps {
   setEditingPhase: React.Dispatch<React.SetStateAction<EditablePhase | null>>;
 }
 
+// Define endpoint constants
+const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
+const ORGANIZER_EVENT_AREA_DETAIL_ENDPOINT = (
+  eventId: string,
+  areaId: number
+) => `${BASE_URL}/api/organizer/events/${eventId}/areas/${areaId}`;
+const ORGANIZER_PHASE_DETAIL_ENDPOINT = (phaseId: number) =>
+  `${BASE_URL}/api/organizer/events/phases/${phaseId}`;
+
 const OrganizerTicketSalePhases = ({
   eventId,
   phases,
@@ -84,7 +95,7 @@ const OrganizerTicketSalePhases = ({
         if (!token) return;
 
         const response = await axios.get(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas`,
+          ORGANIZER_EVENT_AREAS_ENDPOINT(eventId),
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setAreas(response.data.data);
@@ -159,7 +170,7 @@ const OrganizerTicketSalePhases = ({
       // Update area if editingArea exists
       if (editingArea) {
         await axios.put(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas/${editingArea.areaId}`,
+          ORGANIZER_EVENT_AREA_DETAIL_ENDPOINT(eventId, editingArea.areaId),
           {
             name: editingArea.name,
             totalTickets: editingArea.totalTickets,
@@ -229,14 +240,11 @@ const OrganizerTicketSalePhases = ({
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/organizer/events/phases/${phaseId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        await axios.delete(ORGANIZER_PHASE_DETAIL_ENDPOINT(phaseId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         toast.success("Xóa phiên bán vé thành công!");
 

@@ -5,6 +5,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaEdit, FaTrash, FaPlus, FaInfoCircle } from "react-icons/fa";
 import { useNavigate, Link } from "react-router-dom";
+import { BASE_URL } from "../../utils/const";
 
 interface Event {
   eventId: number;
@@ -20,6 +21,10 @@ interface Event {
   bannerUrl: string;
   status: string;
 }
+
+const ORGANIZER_EVENTS_ENDPOINT = `${BASE_URL}/api/organizer/events`;
+const ORGANIZER_EVENT_DELETE_ENDPOINT = (eventId: number) =>
+  `${BASE_URL}/api/organizer/events/${eventId}`;
 
 const OrganizerEvent = () => {
   const [events, setEvents] = useState<Event[]>([]);
@@ -38,15 +43,12 @@ const OrganizerEvent = () => {
         return;
       }
 
-      const response = await axios.get<Event[]>(
-        "http://localhost:8085/api/organizer/events",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await axios.get<Event[]>(ORGANIZER_EVENTS_ENDPOINT, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       setEvents(response.data);
       setFilteredEvents(response.data);
@@ -109,15 +111,12 @@ const OrganizerEvent = () => {
           return;
         }
 
-        await axios.delete(
-          `http://localhost:8085/api/organizer/events/${eventId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.delete(ORGANIZER_EVENT_DELETE_ENDPOINT(eventId), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
 
         const updated = events.filter((event) => event.eventId !== eventId);
         setEvents(updated);

@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   name: string;
@@ -27,6 +28,13 @@ interface TemplateArea {
   templateAreaId: number;
   name: string;
 }
+
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_CATEGORIES_ENDPOINT = `${BASE_URL}/api/admin/categories`;
+const ADMIN_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
+const ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT = (templateId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}`;
+const ADMIN_EVENTS_ENDPOINT = `${BASE_URL}/api/admin/events`;
 
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate();
@@ -63,14 +71,10 @@ const CreateEvent: React.FC = () => {
     }
 
     const headers = { Authorization: `Bearer ${token}` };
-    const fetchCategories = axios.get(
-      "http://localhost:8085/api/admin/categories",
-      { headers }
-    );
-    const fetchMapTemplates = axios.get(
-      "http://localhost:8085/api/admin/map-templates",
-      { headers }
-    );
+    const fetchCategories = axios.get(ADMIN_CATEGORIES_ENDPOINT, { headers });
+    const fetchMapTemplates = axios.get(ADMIN_MAP_TEMPLATES_ENDPOINT, {
+      headers,
+    });
 
     Promise.all([fetchCategories, fetchMapTemplates])
       .then(([catResp, mapResp]) => {
@@ -89,10 +93,9 @@ const CreateEvent: React.FC = () => {
     const headers = { Authorization: `Bearer ${token}` };
 
     axios
-      .get(
-        `http://localhost:8085/api/admin/map-templates/${eventData.mapTemplateId}`,
-        { headers }
-      )
+      .get(ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(eventData.mapTemplateId), {
+        headers,
+      })
       .then((resp) => setTemplateAreas(resp.data.areas || []))
       .catch((err) =>
         toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
@@ -288,15 +291,11 @@ const CreateEvent: React.FC = () => {
     if (bannerFile) formData.append("banner", bannerFile);
 
     try {
-      const resp = await axios.post(
-        "http://localhost:8085/api/admin/events",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      const resp = await axios.post(ADMIN_EVENTS_ENDPOINT, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success(
         `Sự kiện đã được tạo thành công với ID: ${resp.data.eventId}`

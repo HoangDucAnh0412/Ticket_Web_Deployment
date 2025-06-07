@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link, useParams } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   areaId: number;
@@ -19,6 +20,12 @@ interface Phase {
   areaId: number;
 }
 
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/areas`;
+const ADMIN_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/phases`;
+
 const CreateEventPhase: React.FC = () => {
   const navigate = useNavigate();
   const { eventId } = useParams<{ eventId: string }>();
@@ -34,11 +41,9 @@ const CreateEventPhase: React.FC = () => {
         if (!token) return;
 
         const response = await axios.get(
-          `http://localhost:8085/api/admin/events/${eventId}/areas`,
+          ADMIN_EVENT_AREAS_ENDPOINT(eventId || ""),
           {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+            headers: { Authorization: `Bearer ${token}` },
           }
         );
         setAreas(response.data.data);
@@ -99,16 +104,12 @@ const CreateEventPhase: React.FC = () => {
 
     try {
       for (const phase of phases) {
-        await axios.post(
-          `http://localhost:8085/api/admin/events/${eventId}/phases`,
-          phase,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        await axios.post(ADMIN_EVENT_PHASES_ENDPOINT(eventId || ""), phase, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        });
       }
 
       toast.success("Tạo phiên bán vé thành công!");

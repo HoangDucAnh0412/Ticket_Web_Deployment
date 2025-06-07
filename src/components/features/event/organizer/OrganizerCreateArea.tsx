@@ -3,6 +3,7 @@ import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link, useParams } from "react-router-dom";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Area {
   name: string;
@@ -15,6 +16,11 @@ interface TemplateArea {
   templateAreaId: number;
   name: string;
 }
+
+// Định nghĩa các endpoint rõ ràng
+const ORGANIZER_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/organizer/map-templates`;
+const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
 
 const OrganizerCreateArea: React.FC = () => {
   const navigate = useNavigate();
@@ -37,7 +43,7 @@ const OrganizerCreateArea: React.FC = () => {
 
     const headers = { Authorization: `Bearer ${token}` };
     axios
-      .get("http://localhost:8085/api/organizer/map-templates", { headers })
+      .get(ORGANIZER_MAP_TEMPLATES_ENDPOINT, { headers })
       .then((resp) => setMapTemplates(resp.data))
       .catch((err) => toast.error(`Không thể tải dữ liệu: ${err.message}`));
   }, []);
@@ -52,7 +58,7 @@ const OrganizerCreateArea: React.FC = () => {
     const headers = { Authorization: `Bearer ${token}` };
 
     axios
-      .get("http://localhost:8085/api/organizer/map-templates", { headers })
+      .get(ORGANIZER_MAP_TEMPLATES_ENDPOINT, { headers })
       .then((resp) => {
         const template = resp.data.find(
           (t: any) => t.templateId === selectedTemplateId
@@ -199,11 +205,9 @@ const OrganizerCreateArea: React.FC = () => {
       };
 
       for (const area of areas) {
-        await axios.post(
-          `http://localhost:8085/api/organizer/events/${eventId}/areas`,
-          area,
-          { headers }
-        );
+        await axios.post(ORGANIZER_EVENT_AREAS_ENDPOINT(eventId || ""), area, {
+          headers,
+        });
       }
 
       toast.success("Tạo khu vực thành công!");

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { BASE_URL } from "../../../utils/const";
 
 interface Vertex {
   x: number;
@@ -35,6 +36,13 @@ interface UpdateMapTemplateProps {
   template: MapTemplate;
   onUpdate: (success: boolean) => void;
 }
+
+const ADMIN_UPDATE_MAP_TEMPLATE_ENDPOINT = (templateId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}`;
+const ADMIN_UPDATE_MAP_AREA_ENDPOINT = (templateId: number, areaId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}/areas/${areaId}`;
+const ADMIN_DELETE_MAP_AREA_ENDPOINT = (templateId: number, areaId: number) =>
+  `${BASE_URL}/api/admin/map-templates/${templateId}/areas/${areaId}`;
 
 const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
   template,
@@ -158,7 +166,10 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
         };
 
         return axios.put(
-          `http://localhost:8085/api/admin/map-templates/${template.templateId}/areas/${area.templateAreaId}`,
+          ADMIN_UPDATE_MAP_AREA_ENDPOINT(
+            template.templateId,
+            area.templateAreaId
+          ),
           areaPayload,
           {
             headers: {
@@ -172,7 +183,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       // Execute both template update and area updates simultaneously
       const [templateResponse, ...areaResponses] = await Promise.all([
         axios.put(
-          `http://localhost:8085/api/admin/map-templates/${template.templateId}`,
+          ADMIN_UPDATE_MAP_TEMPLATE_ENDPOINT(template.templateId),
           templatePayload,
           {
             headers: {
@@ -202,7 +213,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
 
     try {
       await axios.delete(
-        `http://localhost:8085/api/admin/map-templates/${template.templateId}/areas/${areaId}`,
+        ADMIN_DELETE_MAP_AREA_ENDPOINT(template.templateId, areaId),
         {
           headers: {
             Authorization: `Bearer ${token}`,

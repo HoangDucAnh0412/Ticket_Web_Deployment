@@ -13,6 +13,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState, useMemo } from "react";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Phase {
   phaseId: number;
@@ -43,6 +44,12 @@ interface TicketSalePhasesProps {
   editingPhase: EditablePhase | null;
   setEditingPhase: React.Dispatch<React.SetStateAction<EditablePhase | null>>;
 }
+
+// Định nghĩa các endpoint rõ ràng
+const ADMIN_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/admin/events/${eventId}/phases`;
+const ADMIN_EVENT_PHASE_DELETE_ENDPOINT = (eventId: string, phaseId: number) =>
+  `${BASE_URL}/api/admin/events/${eventId}/phases/${phaseId}`;
 
 const TicketSalePhases = ({
   eventId,
@@ -121,7 +128,7 @@ const TicketSalePhases = ({
 
       // Update phase
       await axios.put(
-        `http://localhost:8085/api/admin/events/phases/${editingPhase.phaseId}`,
+        ADMIN_EVENT_PHASES_ENDPOINT(eventId),
         {
           startTime: editingPhase.startTime,
           endTime: editingPhase.endTime,
@@ -176,7 +183,7 @@ const TicketSalePhases = ({
         }
 
         await axios.delete(
-          `http://localhost:8085/api/admin/events/phases/${phaseId}`,
+          ADMIN_EVENT_PHASE_DELETE_ENDPOINT(eventId, phaseId),
           {
             headers: {
               Authorization: `Bearer ${token}`,

@@ -2,16 +2,19 @@ import React from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { BASE_URL } from "../utils/const";
 
 function Profile() {
   const username = localStorage.getItem("username");
   const token = localStorage.getItem("token");
   const navigate = useNavigate();
 
+  const LOGOUT_ENDPOINT = `${BASE_URL}/api/auth/logout`;
+
   const handleLogout = async () => {
     try {
       await axios.post(
-        "http://localhost:8085/api/auth/logout",
+        LOGOUT_ENDPOINT,
         {},
         {
           headers: {
