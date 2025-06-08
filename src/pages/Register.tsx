@@ -70,7 +70,7 @@ function Register() {
           "Content-Type": "application/json",
         },
       });
-
+      console.log(response);
       toast.success("Account created successfully! Please sign in.");
       setTimeout(() => {
         navigate("/login");

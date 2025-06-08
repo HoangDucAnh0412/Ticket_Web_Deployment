@@ -181,7 +181,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       });
 
       // Execute both template update and area updates simultaneously
-      const [templateResponse, ...areaResponses] = await Promise.all([
+      const [] = await Promise.all([
         axios.put(
           ADMIN_UPDATE_MAP_TEMPLATE_ENDPOINT(template.templateId),
           templatePayload,

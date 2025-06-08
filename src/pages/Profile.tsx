@@ -1,7 +1,6 @@
-import React from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { FaUserCircle, FaSignOutAlt } from "react-icons/fa";
+import { FaUserCircle } from "react-icons/fa";
 import { BASE_URL } from "../utils/const";
 
 function Profile() {

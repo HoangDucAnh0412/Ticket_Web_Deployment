@@ -89,39 +89,8 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
     setMapTemplate({ ...mapTemplate, [name]: parsedValue });
   };
 
-  const handleVertexChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    areaIdx: number,
-    vertexIdx: number
-  ) => {
-    const { name, value } = e.target;
-    const parsedValue = value === "" ? "" : parseFloat(value);
-    const updatedAreas = [...mapTemplate.areas];
-    const updatedVertices = [...(updatedAreas[areaIdx].vertices || [])];
-    updatedVertices[vertexIdx] = {
-      ...updatedVertices[vertexIdx],
-      [name]: parsedValue,
-    };
-    updatedAreas[areaIdx].vertices = updatedVertices;
-    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
-  };
 
-  const handleAddVertex = (areaIdx: number) => {
-    const updatedAreas = [...mapTemplate.areas];
-    updatedAreas[areaIdx].vertices = [
-      ...(updatedAreas[areaIdx].vertices || []),
-      { x: 0, y: 0 },
-    ];
-    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
-  };
 
-  const handleRemoveVertex = (areaIdx: number, vertexIdx: number) => {
-    const updatedAreas = [...mapTemplate.areas];
-    updatedAreas[areaIdx].vertices = updatedAreas[areaIdx].vertices.filter(
-      (_, i) => i !== vertexIdx
-    );
-    setMapTemplate({ ...mapTemplate, areas: updatedAreas });
-  };
 
   const handleAddArea = () => {
     if (mapTemplate.areas.length >= mapTemplate.areaCount) {

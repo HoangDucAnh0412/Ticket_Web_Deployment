@@ -4,7 +4,7 @@ import axios from "axios";
 import TicketSalePhases from "./TicketSalePhases";
 import MapVisual from "./EventMapVisual";
 import EventAreas from "./EventAreas";
-import { FaChevronDown, FaChevronUp } from "react-icons/fa";
+import { FaChevronDown } from "react-icons/fa";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../../../../utils/const";
 
@@ -72,7 +72,7 @@ const EventDetail = () => {
   const [phases, setPhases] = useState<Phase[]>([]);
   const [openPhaseIndex, setOpenPhaseIndex] = useState<number | null>(null);
   const [editingPhase, setEditingPhase] = useState<EditablePhase | null>(null);
-  const [areas, setAreas] = useState<
+  const [, setAreas] = useState<
     Array<{ areaId: number; name: string; price: number }>
   >([]);
 

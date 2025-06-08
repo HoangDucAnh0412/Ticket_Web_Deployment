@@ -4,7 +4,7 @@ import axios from "axios";
 import OrganizerTicketSalePhases from "./OrganizerTicketSalePhases";
 import OrganizerMapVisual from "./OrganizerEventMapVisual";
 import OrganizerEventAreas from "./OrganizerEventAreas";
-import OrganizerCreateArea from "./OrganizerCreateArea";
+
 import { BASE_URL } from "../../../../utils/const";
 
 interface Event {

@@ -12,7 +12,7 @@ import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { BASE_URL } from "../../../../utils/const";
 
 interface Phase {
@@ -366,7 +366,7 @@ const TicketSalePhases = ({
               new Date(a[0].startTime).getTime() -
               new Date(b[0].startTime).getTime()
           )
-          .map(([key, groupPhases], index) => {
+          .map(([, groupPhases], index) => {
             const firstPhase = groupPhases[0];
             const isOpen = openPhaseIndex === index;
             return (

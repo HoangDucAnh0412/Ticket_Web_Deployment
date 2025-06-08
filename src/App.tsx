@@ -1,10 +1,8 @@
-import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
-  useParams,
 } from "react-router-dom";
 import Login from "./pages/Login";
 import Dashboard from "./pages/admin/Dashboard";
@@ -31,19 +29,26 @@ import OrganizerUpdateEvent from "./components/features/event/organizer/Organize
 import Register from "./pages/Register";
 import CreateArea from "./components/features/event/admin/CreateArea";
 import OrganizerCreateArea from "./components/features/event/organizer/OrganizerCreateArea";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Khi vào / thì redirect về /login */}
+        {/* Public routes */}
         <Route path="/" element={<Navigate replace to="/login" />} />
-
-        {/* Trang Login */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        {/* Route layout chính */}
-        <Route path="/dashboard/*" element={<Dashboard />}>
+
+        {/* Protected admin routes */}
+        <Route
+          path="/dashboard/*"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        >
           <Route index element={<div>Welcome to the Dashboard</div>} />
           <Route path="category" element={<Category />} />
           <Route path="event" element={<Event />} />
@@ -62,8 +67,15 @@ const App = () => {
           <Route path="user/:userId" element={<UserDetail />} />
         </Route>
 
-        {/* Route layout cho organizer */}
-        <Route path="/organizer/*" element={<OrganizerDashboard />}>
+        {/* Protected organizer routes */}
+        <Route
+          path="/organizer/*"
+          element={
+            <PrivateRoute>
+              <OrganizerDashboard />
+            </PrivateRoute>
+          }
+        >
           <Route path="events" element={<OrganizerEvent />} />
           <Route path="events/create" element={<OrganizerCreateEvent />} />
           <Route
@@ -82,8 +94,8 @@ const App = () => {
           <Route path="profile" element={<Profile />} />
         </Route>
 
-        {/* Optional: với mọi đường dẫn không khớp, cũng redirect về login
-        <Route path="*" element={<Navigate replace to="/login" />} /> */}
+        {/* Catch all route - redirect to login */}
+        <Route path="*" element={<Navigate replace to="/login" />} />
       </Routes>
     </Router>
   );
