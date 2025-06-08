@@ -28,8 +28,7 @@ interface User {
   updatedAt: string;
 }
 
-const ADMIN_USERS_ENDPOINT = (page: number, size: number) =>
-  `${BASE_URL}/api/admin/users?page=${page}&size=${size}`;
+const ADMIN_USERS_ENDPOINT = `${BASE_URL}/api/admin/users`;
 const ADMIN_USER_DELETE_ENDPOINT = (userId: number) =>
   `${BASE_URL}/api/admin/users/${userId}`;
 
@@ -40,13 +39,11 @@ const User = () => {
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
-
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for sorting/filtering
   const [pageInput, setPageInput] = useState<string>(
     (currentPage + 1).toString()
-  ); // Separate state for pagination input
+  );
 
   // Debounced search handler
   const debouncedSearch = useCallback(
@@ -57,20 +54,28 @@ const User = () => {
     []
   );
 
-  // Fetch users for the current page
+  // Fetch users with search and sort parameters
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-
         if (!token) {
           setError("Vui lòng đăng nhập để xem danh sách user");
           return;
         }
 
+        // Create query parameters
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          size: pageSize.toString(),
+          search: searchTerm,
+          sortBy: "userId",
+          sortDirection: sortDirection,
+        });
+
         const response = await axios.get(
-          ADMIN_USERS_ENDPOINT(currentPage, pageSize),
+          `${ADMIN_USERS_ENDPOINT}?${params.toString()}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -88,8 +93,7 @@ const User = () => {
       } catch (error: any) {
         if (error.response) {
           setError(
-            `Lỗi: ${error.response.status} - ${
-              error.response.data?.message || "Không thể tải danh sách user"
+            `Lỗi: ${error.response.status} - ${error.response.data?.message || "Không thể tải danh sách user"
             }`
           );
         } else {
@@ -101,72 +105,7 @@ const User = () => {
     };
 
     fetchUsers();
-  }, [currentPage, pageSize]);
-
-  // Fetch all users when sorting
-  useEffect(() => {
-    const fetchAllUsers = async () => {
-      try {
-        setLoading(true);
-        const token = localStorage.getItem("token");
-        if (!token) {
-          setError("Vui lòng đăng nhập để xem danh sách user");
-          return;
-        }
-
-        let allFetchedUsers: User[] = [];
-        let page = 0;
-        let totalPagesFromApi = 0;
-
-        do {
-          const response = await axios.get(
-            ADMIN_USERS_ENDPOINT(page, pageSize),
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          if (response.data && response.data.data) {
-            const paginatedData = response.data.data;
-            allFetchedUsers = [...allFetchedUsers, ...paginatedData.content];
-            totalPagesFromApi = paginatedData.totalPages;
-          }
-          page++;
-        } while (page < totalPagesFromApi);
-
-        setAllUsers(allFetchedUsers);
-      } catch (error: any) {
-        setError(
-          `Lỗi khi tải toàn bộ danh sách: ${
-            error.response?.data?.message || "Không thể tải dữ liệu"
-          }`
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchAllUsers();
-  }, [sortDirection, pageSize]);
-
-  // Filter and Sort (applied locally without triggering fetch)
-  const filteredAndSortedUsers = [...allUsers]
-    .filter(
-      (user) =>
-        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        user.phone.includes(searchTerm)
-    )
-    .sort((a, b) =>
-      sortDirection === "asc" ? a.userId - b.userId : b.userId - a.userId
-    );
-
-  // Paginate the filtered and sorted data
-  const paginatedUsers = filteredAndSortedUsers.slice(
-    currentPage * pageSize,
-    (currentPage + 1) * pageSize
-  );
+  }, [currentPage, pageSize, searchTerm, sortDirection]);
 
   const handleSort = () => {
     setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -200,7 +139,6 @@ const User = () => {
         });
 
         setUsers((prev) => prev.filter((user) => user.userId !== userId));
-        setAllUsers((prev) => prev.filter((user) => user.userId !== userId)); // Update allUsers as well
         toast.success("Xóa người dùng thành công!");
       } catch (error: any) {
         console.error("Lỗi khi xóa người dùng:", error);
@@ -211,12 +149,11 @@ const User = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    setPageInput((page + 1).toString()); // Update input value when page changes
+    setPageInput((page + 1).toString());
   };
 
   const handlePageInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setPageInput(value); // Update the input state as the user types
+    setPageInput(e.target.value);
   };
 
   const handlePageInputBlur = () => {
@@ -224,7 +161,7 @@ const User = () => {
     if (!isNaN(page) && page >= 0 && page < totalPages) {
       handlePageChange(page);
     } else {
-      setPageInput((currentPage + 1).toString()); // Reset to current page if invalid
+      setPageInput((currentPage + 1).toString());
     }
   };
 
@@ -236,7 +173,7 @@ const User = () => {
       if (!isNaN(page) && page >= 0 && page < totalPages) {
         handlePageChange(page);
       } else {
-        setPageInput((currentPage + 1).toString()); // Reset to current page if invalid
+        setPageInput((currentPage + 1).toString());
       }
     }
   };
@@ -319,11 +256,7 @@ const User = () => {
             className="px-3 py-2 rounded bg-green-500 text-white"
             title="Sắp xếp theo ID"
           >
-            {sortDirection === "asc" ? (
-              <FaSortAmountUp />
-            ) : (
-              <FaSortAmountDown />
-            )}
+            {sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
           </button>
         </div>
       </div>
@@ -347,8 +280,8 @@ const User = () => {
               </tr>
             </thead>
             <tbody>
-              {paginatedUsers.length > 0 ? (
-                paginatedUsers.map((user) => (
+              {users.length > 0 ? (
+                users.map((user) => (
                   <tr key={user.userId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 border-b">{user.userId}</td>
                     <td className="px-6 py-4 border-b">{user.email}</td>
@@ -426,12 +359,10 @@ const User = () => {
               startPage + maxVisiblePages - 1
             );
 
-            // Adjust start page if we're near the end
             if (endPage - startPage + 1 < maxVisiblePages) {
               startPage = Math.max(0, endPage - maxVisiblePages + 1);
             }
 
-            // Add first page if not included
             if (startPage > 0) {
               pages.push(
                 <button
@@ -451,22 +382,19 @@ const User = () => {
               }
             }
 
-            // Add visible pages
             for (let i = startPage; i <= endPage; i++) {
               pages.push(
                 <button
                   key={i}
                   onClick={() => handlePageChange(i)}
-                  className={`px-4 py-2 rounded ${
-                    currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
-                  }`}
+                  className={`px-4 py-2 rounded ${currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
+                    }`}
                 >
                   {i + 1}
                 </button>
               );
             }
 
-            // Add last page if not included
             if (endPage < totalPages - 1) {
               if (endPage < totalPages - 2) {
                 pages.push(
@@ -497,10 +425,9 @@ const User = () => {
             Next
           </button>
 
-          {/* Page input */}
           <div className="flex items-center gap-2 ml-4">
             <input
-              type="text" // Changed to text to allow better control
+              type="text"
               value={pageInput}
               onChange={handlePageInputChange}
               onBlur={handlePageInputBlur}
