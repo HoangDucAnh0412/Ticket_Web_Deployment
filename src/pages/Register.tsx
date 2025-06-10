@@ -14,6 +14,9 @@ function Register() {
     fullName: "",
     phone: "",
     address: "",
+    organizationName: "",
+    contactEmail: "",
+    description: "",
   });
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
@@ -22,7 +25,7 @@ function Register() {
 
   const REGISTER_ENDPOINT = `${BASE_URL}/api/organizer/register`;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -41,10 +44,16 @@ function Register() {
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     if (!formData.address.trim()) newErrors.address = "Address is required";
+    if (!formData.organizationName.trim()) newErrors.organizationName = "Organization name is required";
+    if (!formData.contactEmail.trim()) newErrors.contactEmail = "Contact email is required";
+    if (!formData.description.trim()) newErrors.description = "Description is required";
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
       newErrors.email = "Invalid email format";
+    }
+    if (formData.contactEmail && !emailRegex.test(formData.contactEmail)) {
+      newErrors.contactEmail = "Invalid contact email format";
     }
 
     const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
@@ -71,7 +80,7 @@ function Register() {
         },
       });
       console.log(response);
-      toast.success("Account created successfully! Please sign in.");
+      toast.success("Organizer account created successfully! Please sign in.");
       setTimeout(() => {
         navigate("/login");
       }, 2000);
@@ -79,21 +88,24 @@ function Register() {
       console.error("Error:", error);
       toast.error(
         error.response?.data?.message ||
-          "Failed to create account. Please try again."
+        "Failed to create account. Please try again."
       );
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white">
+    <div className="min-h-screen flex items-center justify-center bg-white py-8">
       <ToastContainer position="top-right" autoClose={3000} />
-      <div className="w-full max-w-md px-8 py-6 border border-gray-500 rounded-3xl">
+      <div className="w-full max-w-2xl px-8 py-6 border border-gray-500 rounded-3xl mx-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Title with Tickvivo */}
           <div className="text-center">
             <h2 className="text-3xl font-bold text-gray-800 mb-2 mt-5">
-              Create an account
+              Create Organizer Account
             </h2>
+            <p className="text-gray-600 text-sm mb-3">
+              Join us to organize your events
+            </p>
             <div className="inline-flex items-center mb-5">
               <span className="text-2xl font-bold text-black">Tick</span>
               <span className="text-2xl font-bold text-green-500">vi</span>
@@ -255,12 +267,85 @@ function Register() {
             )}
           </div>
 
+          {/* Organization Name and Contact Email Row */}
+          <div className="flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0">
+            <div className="relative w-full md:w-1/2">
+              {formData.organizationName && (
+                <label
+                  htmlFor="organizationName"
+                  className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-600"
+                >
+                  Organization Name
+                </label>
+              )}
+              <input
+                type="text"
+                id="organizationName"
+                name="organizationName"
+                value={formData.organizationName}
+                onChange={handleInputChange}
+                placeholder="Organization Name"
+                className="w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+              {errors.organizationName && (
+                <p className="text-red-500 text-xs mt-1">{errors.organizationName}</p>
+              )}
+            </div>
+
+            <div className="relative w-full md:w-1/2">
+              {formData.contactEmail && (
+                <label
+                  htmlFor="contactEmail"
+                  className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-600"
+                >
+                  Contact Email
+                </label>
+              )}
+              <input
+                type="email"
+                id="contactEmail"
+                name="contactEmail"
+                value={formData.contactEmail}
+                onChange={handleInputChange}
+                placeholder="Contact Email"
+                className="w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              />
+              {errors.contactEmail && (
+                <p className="text-red-500 text-xs mt-1">{errors.contactEmail}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="relative">
+            {formData.description && (
+              <label
+                htmlFor="description"
+                className="absolute -top-2 left-3 bg-white px-1 text-xs text-gray-600"
+              >
+                Description
+              </label>
+            )}
+            <textarea
+              id="description"
+              name="description"
+              value={formData.description}
+              onChange={handleInputChange}
+              placeholder="Organization Description"
+              rows={3}
+              className="w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm resize-none"
+            />
+            {errors.description && (
+              <p className="text-red-500 text-xs mt-1">{errors.description}</p>
+            )}
+          </div>
+
           {/* Register Button */}
           <button
             type="submit"
-            className="w-full bg-green-700 text-white py-3 rounded-3xl text-base font-bold"
+            className="w-full bg-green-700 text-white py-3 rounded-3xl text-base font-bold hover:bg-green-800 transition-colors duration-200"
           >
-            Create an account
+            Create Organizer Account
           </button>
 
           {/* Links */}

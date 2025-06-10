@@ -147,7 +147,7 @@ function Login() {
               to="/register"
               className="text-blue-600 font-bold hover:underline"
             >
-              Create an account
+              Create organizer account
             </Link>
           </p>
 

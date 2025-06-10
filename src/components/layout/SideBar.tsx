@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import { FaChartBar, FaShoppingCart, FaUser, FaMapMarkedAlt, FaTicketAlt } from "react-icons/fa";
+import { FaChartBar, FaShoppingCart, FaUser, FaMapMarkedAlt, FaTicketAlt, FaExchangeAlt, FaQrcode } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function SideBar() {
@@ -9,6 +9,8 @@ function SideBar() {
     { to: "/dashboard/category", icon: <FaTicketAlt />, label: "Category" },
     { to: "/dashboard/event", icon: <FaShoppingCart />, label: "Event" },
     { to: "/dashboard/map", icon: <FaMapMarkedAlt />, label: "Map" },
+    { to: "/dashboard/transactions", icon: <FaExchangeAlt />, label: "Transactions" },
+    { to: "/dashboard/tickets", icon: <FaQrcode />, label: "Tickets" },
     { to: "/dashboard/user", icon: <FaUser />, label: "User" },
   ];
 
@@ -36,8 +38,7 @@ function SideBar() {
             <li key={item.to}>
               <Link
                 to={item.to}
-                className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                  location.pathname === item.to
+                className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === item.to
                     ? "bg-green-100 text-green-500 font-medium"
                     : "hover:bg-green-100 hover:text-green-500"
                 }`}
@@ -55,8 +56,7 @@ function SideBar() {
           <li>
             <Link
               to="/dashboard/profile"
-              className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                location.pathname === "/dashboard/profile"
+              className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === "/dashboard/profile"
                   ? "bg-green-100 text-green-500 font-medium"
                   : "hover:bg-green-100 hover:text-green-500"
               }`}

@@ -18,14 +18,19 @@ import CreateEventPhase from "./components/features/event/admin/CreateEventPhase
 import User from "./pages/admin/User";
 import UpdateUser from "./components/features/user/UpdateUser";
 import CreateUser from "./components/features/user/CreateUser";
-import UserDetail from "./components/features/user/UserDetail";
+import UserDetail from "./pages/admin/UserDetail";
 import UpdateEvent from "./components/features/event/admin/UpdateEvent";
+import Transactions from "./pages/admin/Transactions";
+import Ticket from "./pages/admin/Ticket";
 import OrganizerDashboard from "./pages/organizer/OrganizerDashboard";
 import OrganizerEvent from "./pages/organizer/OrganizerEvent";
 import OrganizerEventDetail from "./components/features/event/organizer/OrganizerEventDetail";
 import OrganizerCreateEvent from "./components/features/event/organizer/OrganizerCreateEvent";
 import CreateEventOrganizerPhase from "./components/features/event/organizer/OrganizerCreateEventPhase";
 import OrganizerUpdateEvent from "./components/features/event/organizer/OrganizerUpdateEvent";
+import OrganizerTransactions from "./pages/organizer/OrganizerTransactions";
+import OrganizerTicket from "./pages/organizer/OrganizerTicket";
+import OrganizerProfile from "./pages/organizer/OrganizerProfile";
 import Register from "./pages/Register";
 import CreateArea from "./components/features/event/admin/CreateArea";
 import OrganizerCreateArea from "./components/features/event/organizer/OrganizerCreateArea";
@@ -60,6 +65,8 @@ const App = () => {
           <Route path="map" element={<MapTemplate />} />
           <Route path="map/:id" element={<MapDetail />} />
           <Route path="map/:id/area" element={<CreateMapArea />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="tickets" element={<Ticket />} />
           <Route path="profile" element={<Profile />} />
           <Route path="user" element={<User />} />
           <Route path="user/edit/:userId" element={<UpdateUser />} />
@@ -91,7 +98,9 @@ const App = () => {
             path="events/:eventId/area"
             element={<OrganizerCreateArea />}
           />
-          <Route path="profile" element={<Profile />} />
+          <Route path="transactions" element={<OrganizerTransactions />} />
+          <Route path="tickets" element={<OrganizerTicket />} />
+          <Route path="profile" element={<OrganizerProfile />} />
         </Route>
 
         {/* Catch all route - redirect to login */}

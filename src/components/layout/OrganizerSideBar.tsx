@@ -1,11 +1,13 @@
 import { useLocation } from "react-router-dom";
-import { FaUser, FaThList, FaTicketAlt } from "react-icons/fa";
+import { FaUser, FaThList, FaTicketAlt, FaExchangeAlt, FaQrcode } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function OrganizerSideBar() {
   const location = useLocation();
   const menuItems = [
     { to: "/organizer/events", icon: <FaThList />, label: "Event" },
+    { to: "/organizer/transactions", icon: <FaExchangeAlt />, label: "Transactions" },
+    { to: "/organizer/tickets", icon: <FaQrcode />, label: "Tickets" },
   ];
 
   return (
@@ -32,8 +34,7 @@ function OrganizerSideBar() {
             <li key={item.to}>
               <Link
                 to={item.to}
-                className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                  location.pathname === item.to
+                className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === item.to
                     ? "bg-green-100 text-green-500 font-medium"
                     : "hover:bg-green-100 hover:text-green-500"
                 }`}
@@ -51,8 +52,7 @@ function OrganizerSideBar() {
           <li>
             <Link
               to="/organizer/profile"
-              className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${
-                location.pathname === "/organizer/profile"
+              className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === "/organizer/profile"
                   ? "bg-green-100 text-green-500 font-medium"
                   : "hover:bg-green-100 hover:text-green-500"
               }`}
