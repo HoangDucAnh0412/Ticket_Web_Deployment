@@ -12,25 +12,8 @@ import "react-toastify/dist/ReactToastify.css";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { useEffect, useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { BASE_URL } from "../../../../utils/const";
-
-interface Area {
-  areaId: number;
-  eventId: number;
-  templateAreaId: number;
-  name: string;
-  totalTickets: number;
-  availableTickets: number;
-  price: number;
-}
-
-interface EditableArea {
-  areaId: number;
-  name: string;
-  totalTickets: number;
-  price: number;
-}
 
 interface Phase {
   phaseId: number;
@@ -63,13 +46,9 @@ interface OrganizerTicketSalePhasesProps {
 }
 
 // Define endpoint constants
-const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
-  `${BASE_URL}/api/organizer/events/${eventId}/areas`;
-const ORGANIZER_EVENT_AREA_DETAIL_ENDPOINT = (
-  eventId: string,
-  areaId: number
-) => `${BASE_URL}/api/organizer/events/${eventId}/areas/${areaId}`;
-const ORGANIZER_PHASE_DETAIL_ENDPOINT = (phaseId: number) =>
+const ORGANIZER_EVENT_PHASES_ENDPOINT = (eventId: string) =>
+  `${BASE_URL}/api/organizer/events/${eventId}/phases`;
+const ORGANIZER_EVENT_PHASE_DETAIL_ENDPOINT = (phaseId: number) =>
   `${BASE_URL}/api/organizer/events/phases/${phaseId}`;
 
 const OrganizerTicketSalePhases = ({
@@ -82,42 +61,9 @@ const OrganizerTicketSalePhases = ({
   setEditingPhase,
 }: OrganizerTicketSalePhasesProps) => {
   const navigate = useNavigate();
-  const [areas, setAreas] = useState<Area[]>([]);
-  const [editingArea, setEditingArea] = useState<EditableArea | null>(null);
   const [openNestedPhaseId, setOpenNestedPhaseId] = useState<number | null>(
     null
   );
-
-  useEffect(() => {
-    const fetchAreas = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const response = await axios.get(
-          ORGANIZER_EVENT_AREAS_ENDPOINT(eventId),
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-        setAreas(response.data.data);
-      } catch (error) {
-        console.error("Error fetching areas:", error);
-        toast.error("Failed to fetch area information");
-      }
-    };
-
-    fetchAreas();
-  }, [eventId]);
-
-  // Group phases by startTime and endTime
-  const groupedPhases = useMemo(() => {
-    const groups: { [key: string]: Phase[] } = {};
-    phases.forEach((phase) => {
-      const key = `${phase.startTime}_${phase.endTime}`;
-      if (!groups[key]) groups[key] = [];
-      groups[key].push(phase);
-    });
-    return groups;
-  }, [phases]);
 
   const formatDateTime = (dateTimeStr: string) => {
     const date = new Date(dateTimeStr);
@@ -144,6 +90,17 @@ const OrganizerTicketSalePhases = ({
     }
   };
 
+  // Group phases by startTime and endTime
+  const groupedPhases = useMemo(() => {
+    const groups: { [key: string]: Phase[] } = {};
+    phases.forEach((phase) => {
+      const key = `${phase.startTime}_${phase.endTime}`;
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(phase);
+    });
+    return groups;
+  }, [phases]);
+
   const handleUpdatePhase = (phase: Phase) => {
     setEditingPhase({
       phaseId: phase.phaseId,
@@ -152,6 +109,10 @@ const OrganizerTicketSalePhases = ({
       ticketsAvailable: phase.ticketsAvailable,
       areaId: phase.areaId,
     });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingPhase(null);
   };
 
   const handleSaveUpdate = async () => {
@@ -166,24 +127,21 @@ const OrganizerTicketSalePhases = ({
       }
 
       // Update phase
-
-      // Update area if editingArea exists
-      if (editingArea) {
-        await axios.put(
-          ORGANIZER_EVENT_AREA_DETAIL_ENDPOINT(eventId, editingArea.areaId),
-          {
-            name: editingArea.name,
-            totalTickets: editingArea.totalTickets,
-            price: editingArea.price,
+      await axios.put(
+        ORGANIZER_EVENT_PHASE_DETAIL_ENDPOINT(editingPhase.phaseId),
+        {
+          startTime: editingPhase.startTime,
+          endTime: editingPhase.endTime,
+          ticketsAvailable: editingPhase.ticketsAvailable,
+          areaId: editingPhase.areaId,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
           },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      }
+        }
+      );
 
       toast.success("Cập nhật thành công!");
 
@@ -195,23 +153,7 @@ const OrganizerTicketSalePhases = ({
       );
       setPhases(updatedPhases);
 
-      // Update areas state locally to preserve order
-      if (editingArea) {
-        setAreas((prevAreas) =>
-          prevAreas.map((area) =>
-            area.areaId === editingArea.areaId
-              ? {
-                  ...area,
-                  ...editingArea,
-                  availableTickets: area.availableTickets,
-                }
-              : area
-          )
-        );
-      }
-
       setEditingPhase(null);
-      setEditingArea(null);
       if (currentIndex !== null) setOpenPhaseIndex(currentIndex); // Restore open state
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
@@ -240,7 +182,7 @@ const OrganizerTicketSalePhases = ({
           return;
         }
 
-        await axios.delete(ORGANIZER_PHASE_DETAIL_ENDPOINT(phaseId), {
+        await axios.delete(ORGANIZER_EVENT_PHASE_DETAIL_ENDPOINT(phaseId), {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -278,39 +220,12 @@ const OrganizerTicketSalePhases = ({
           <label className="block text-gray-600 text-sm mb-1">
             Tên khu vực
           </label>
-          {editingPhase?.phaseId === phase.phaseId ? (
-            <input
-              type="text"
-              value={
-                editingArea?.name ||
-                areas.find((a) => a.areaId === phase.areaId)?.name ||
-                ""
-              }
-              onChange={(e) =>
-                setEditingArea({
-                  ...(editingArea || {
-                    areaId: phase.areaId,
-                    name:
-                      areas.find((a) => a.areaId === phase.areaId)?.name || "",
-                    totalTickets:
-                      areas.find((a) => a.areaId === phase.areaId)
-                        ?.totalTickets || 0,
-                    price:
-                      areas.find((a) => a.areaId === phase.areaId)?.price || 0,
-                  }),
-                  name: e.target.value,
-                })
-              }
-              className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-            />
-          ) : (
-            <input
-              type="text"
-              value={phase.areaName}
-              readOnly
-              className="w-full px-3 py-2 border rounded bg-gray-100"
-            />
-          )}
+          <input
+            type="text"
+            value={phase.areaName}
+            readOnly
+            className="w-full px-3 py-2 border rounded bg-gray-100"
+          />
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 text-sm mb-1">
@@ -362,112 +277,32 @@ const OrganizerTicketSalePhases = ({
             />
           )}
         </div>
+        <div className="flex-1">
+          <label className="block text-gray-600 text-sm mb-1">
+            Tổng số vé trong phiên
+          </label>
+          {editingPhase?.phaseId === phase.phaseId ? (
+            <input
+              type="number"
+              value={editingPhase.ticketsAvailable}
+              onChange={(e) =>
+                setEditingPhase({
+                  ...editingPhase,
+                  ticketsAvailable: parseInt(e.target.value) || 0,
+                })
+              }
+              className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          ) : (
+            <input
+              type="text"
+              value={phase.ticketsAvailable}
+              readOnly
+              className="w-full px-3 py-2 border rounded bg-gray-100"
+            />
+          )}
+        </div>
       </div>
-
-      {/* Area Information */}
-      {areas
-        .filter((a) => a.areaId === phase.areaId)
-        .map((area) => (
-          <div
-            key={area.areaId}
-            className="mt-4 flex flex-col md:flex-row gap-4"
-          >
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Tổng số vé trong sự kiện
-              </label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingArea?.totalTickets || area.totalTickets}
-                  onChange={(e) =>
-                    setEditingArea({
-                      ...(editingArea || {
-                        areaId: area.areaId,
-                        name: area.name,
-                        totalTickets: area.totalTickets,
-                        price: area.price,
-                      }),
-                      totalTickets: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={area.totalTickets}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Số vé còn lại
-              </label>
-              <input
-                type="text"
-                value={area.availableTickets}
-                readOnly
-                className="w-full px-3 py-2 border rounded bg-gray-100"
-              />
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">Giá vé</label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingArea?.price || area.price}
-                  onChange={(e) =>
-                    setEditingArea({
-                      ...(editingArea || {
-                        areaId: area.areaId,
-                        name: area.name,
-                        totalTickets: area.totalTickets,
-                        price: area.price,
-                      }),
-                      price: parseFloat(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={area.price.toLocaleString("vi-VN") + " VND"}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-            <div className="flex-1">
-              <label className="block text-gray-600 text-sm mb-1">
-                Tổng số vé trong phiên
-              </label>
-              {editingPhase?.phaseId === phase.phaseId ? (
-                <input
-                  type="number"
-                  value={editingPhase.ticketsAvailable}
-                  onChange={(e) =>
-                    setEditingPhase({
-                      ...editingPhase,
-                      ticketsAvailable: parseInt(e.target.value) || 0,
-                    })
-                  }
-                  className="w-full px-3 py-2 border rounded focus:ring-indigo-500 focus:border-indigo-500"
-                />
-              ) : (
-                <input
-                  type="text"
-                  value={phase.ticketsAvailable}
-                  readOnly
-                  className="w-full px-3 py-2 border rounded bg-gray-100"
-                />
-              )}
-            </div>
-          </div>
-        ))}
       <div className="flex justify-end gap-2 mt-2">
         {editingPhase?.phaseId === phase.phaseId ? (
           <>
@@ -479,10 +314,7 @@ const OrganizerTicketSalePhases = ({
               Lưu
             </button>
             <button
-              onClick={() => {
-                setEditingPhase(null);
-                setEditingArea(null);
-              }}
+              onClick={handleCancelEdit}
               className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
             >
               <FaTimes />
@@ -551,7 +383,7 @@ const OrganizerTicketSalePhases = ({
                     <span className="text-gray-500 text-sm">
                       {groupPhases
                         .map((p) => `${p.areaName} (${p.ticketsAvailable} Vé)`)
-                        .join(" _ ")}
+                        .join(", ")}
                     </span>
                   </div>
                   <div className="flex items-center gap-2">

@@ -39,6 +39,7 @@ interface TemplateArea {
   vertices?: Vertex[];
   zone?: string;
   fillColor?: string;
+  stage: boolean;
 }
 
 interface MapTemplate {
@@ -84,7 +85,8 @@ const CreateEvent: React.FC = () => {
     { templateId: number; name: string }[]
   >([]);
   const [templateAreas, setTemplateAreas] = useState<TemplateArea[]>([]);
-  const [selectedMapTemplate, setSelectedMapTemplate] = useState<MapTemplate | null>(null);
+  const [selectedMapTemplate, setSelectedMapTemplate] =
+    useState<MapTemplate | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(null);
   const [showImageModal, setShowImageModal] = useState(false);
@@ -123,12 +125,30 @@ const CreateEvent: React.FC = () => {
     const headers = { Authorization: `Bearer ${token}` };
 
     axios
-      .get<MapTemplate>(ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(eventData.mapTemplateId), {
-        headers,
-      })
+      .get<MapTemplate>(
+        ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT(eventData.mapTemplateId),
+        {
+          headers,
+        }
+      )
       .then((resp) => {
         setTemplateAreas(resp.data.areas || []);
         setSelectedMapTemplate(resp.data);
+
+        // Automatically add stage areas to the event data
+        const stageAreas = resp.data.areas.filter((area) => area.stage);
+        if (stageAreas.length > 0) {
+          const newAreas = stageAreas.map((area) => ({
+            name: area.name,
+            templateAreaId: area.templateAreaId,
+            totalTickets: 0,
+            price: 0,
+          }));
+          setEventData((prev) => ({
+            ...prev,
+            areas: newAreas,
+          }));
+        }
       })
       .catch((err) =>
         toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
@@ -189,10 +209,14 @@ const CreateEvent: React.FC = () => {
         // Enhanced text rendering
         if (area.vertices.length > 2) {
           // Calculate centroid more accurately
-          let cx = 0, cy = 0, area_calc = 0;
+          let cx = 0,
+            cy = 0,
+            area_calc = 0;
           for (let i = 0; i < area.vertices.length; i++) {
             const j = (i + 1) % area.vertices.length;
-            const cross = area.vertices[i].x * area.vertices[j].y - area.vertices[j].x * area.vertices[i].y;
+            const cross =
+              area.vertices[i].x * area.vertices[j].y -
+              area.vertices[j].x * area.vertices[i].y;
             area_calc += cross;
             cx += (area.vertices[i].x + area.vertices[j].x) * cross;
             cy += (area.vertices[i].y + area.vertices[j].y) * cross;
@@ -202,10 +226,10 @@ const CreateEvent: React.FC = () => {
           cy = (cy / (6 * area_calc)) * scale;
 
           // Calculate bounding box of the area
-          let minX = Math.min(...area.vertices.map(v => v.x)) * scale;
-          let maxX = Math.max(...area.vertices.map(v => v.x)) * scale;
-          let minY = Math.min(...area.vertices.map(v => v.y)) * scale;
-          let maxY = Math.max(...area.vertices.map(v => v.y)) * scale;
+          let minX = Math.min(...area.vertices.map((v) => v.x)) * scale;
+          let maxX = Math.max(...area.vertices.map((v) => v.x)) * scale;
+          let minY = Math.min(...area.vertices.map((v) => v.y)) * scale;
+          let maxY = Math.max(...area.vertices.map((v) => v.y)) * scale;
 
           const areaWidth = maxX - minX;
           const areaHeight = maxY - minY;
@@ -213,7 +237,7 @@ const CreateEvent: React.FC = () => {
           // Calculate appropriate font size based on area dimensions
           const textWidth = ctx.measureText(area.name).width;
           const maxFontSize = Math.min(
-            Math.floor(areaWidth * 0.7 / (area.name.length * 0.5)), // Estimate width per character
+            Math.floor((areaWidth * 0.7) / (area.name.length * 0.5)), // Estimate width per character
             Math.floor(areaHeight * 0.3), // Height constraint
             20 // Maximum font size - increased for better visibility
           );
@@ -230,7 +254,10 @@ const CreateEvent: React.FC = () => {
           if (actualTextWidth > areaWidth * 0.9) {
             // Try to truncate text if it's too long
             let truncatedText = area.name;
-            while (ctx.measureText(truncatedText + "...").width > areaWidth * 0.9 && truncatedText.length > 3) {
+            while (
+              ctx.measureText(truncatedText + "...").width > areaWidth * 0.9 &&
+              truncatedText.length > 3
+            ) {
               truncatedText = truncatedText.slice(0, -1);
             }
             if (truncatedText.length > 3) {
@@ -260,8 +287,8 @@ const CreateEvent: React.FC = () => {
   // Effect to update selected area IDs
   useEffect(() => {
     const selectedIds = eventData.areas
-      .filter(area => area.templateAreaId !== 0)
-      .map(area => area.templateAreaId);
+      .filter((area) => area.templateAreaId !== 0)
+      .map((area) => area.templateAreaId);
     setSelectedAreaIds(selectedIds);
   }, [eventData.areas]);
 
@@ -403,12 +430,12 @@ const CreateEvent: React.FC = () => {
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
 
-    if (type === "image") {
-      setImageFile(file);
+      if (type === "image") {
+        setImageFile(file);
         setImageFileName(file.name);
         setImagePreview(previewUrl);
-    } else {
-      setBannerFile(file);
+      } else {
+        setBannerFile(file);
         setBannerFileName(file.name);
         setBannerPreview(previewUrl);
       }
@@ -687,19 +714,19 @@ const CreateEvent: React.FC = () => {
               {/* Template Selection */}
               <div className="grid md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-            <select
-              name="mapTemplateId"
-              value={eventData.mapTemplateId}
-              onChange={handleInputChange}
+                  <select
+                    name="mapTemplateId"
+                    value={eventData.mapTemplateId}
+                    onChange={handleInputChange}
                     className="block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-            >
+                  >
                     <option value={0}>Chọn template bản đồ</option>
-              {mapTemplates.map((t) => (
-                <option key={t.templateId} value={t.templateId}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+                    {mapTemplates.map((t) => (
+                      <option key={t.templateId} value={t.templateId}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
                 {selectedMapTemplate && (
@@ -710,15 +737,22 @@ const CreateEvent: React.FC = () => {
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <span className="text-gray-600">Mô tả:</span>
-                        <p className="font-medium text-gray-800">{selectedMapTemplate.description || 'Không có mô tả'}</p>
+                        <p className="font-medium text-gray-800">
+                          {selectedMapTemplate.description || "Không có mô tả"}
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Kích thước:</span>
-                        <p className="font-medium text-gray-800">{selectedMapTemplate.mapWidth} × {selectedMapTemplate.mapHeight}px</p>
+                        <p className="font-medium text-gray-800">
+                          {selectedMapTemplate.mapWidth} ×{" "}
+                          {selectedMapTemplate.mapHeight}px
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Số khu vực:</span>
-                        <p className="font-medium text-gray-800">{selectedMapTemplate.areaCount} khu vực</p>
+                        <p className="font-medium text-gray-800">
+                          {selectedMapTemplate.areaCount} khu vực
+                        </p>
                       </div>
                       <div>
                         <span className="text-gray-600">Trạng thái:</span>
@@ -755,7 +789,7 @@ const CreateEvent: React.FC = () => {
                         style={{
                           maxWidth: "100%",
                           maxHeight: "800px",
-                          minHeight: "400px"
+                          minHeight: "400px",
                         }}
                       />
                     </div>
@@ -773,9 +807,7 @@ const CreateEvent: React.FC = () => {
               const selectedTemplateArea = templateAreas.find(
                 (ta) => ta.templateAreaId === area.templateAreaId
               );
-              const isStageArea = selectedTemplateArea?.name
-                .toLowerCase()
-                .startsWith("stage");
+              const isStageArea = selectedTemplateArea?.stage;
 
               return (
                 <div
@@ -828,7 +860,8 @@ const CreateEvent: React.FC = () => {
                         value={area.totalTickets}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
-                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
+                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${
+                          isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
                         }`}
                       />
                     </div>
@@ -843,18 +876,21 @@ const CreateEvent: React.FC = () => {
                         value={area.price}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
-                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
+                        className={`mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500 ${
+                          isStageArea ? "bg-gray-100 cursor-not-allowed" : ""
                         }`}
                       />
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveArea(idx)}
-                    className="mt-2 text-red-600 hover:text-red-800"
-                  >
-                    Xóa khu vực
-                  </button>
+                  {!isStageArea && (
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveArea(idx)}
+                      className="mt-2 text-red-600 hover:text-red-800"
+                    >
+                      Xóa khu vực
+                    </button>
+                  )}
                 </div>
               );
             })}
@@ -867,26 +903,28 @@ const CreateEvent: React.FC = () => {
             </button>
           </div>
 
-            <div>
+          <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
               Media Files
-              </label>
+            </label>
             <div className="grid md:grid-cols-2 gap-6">
               {/* Image Upload */}
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-800">🖼️ Hình Ảnh Sự Kiện</h4>
+                <h4 className="font-medium text-gray-800">
+                  🖼️ Hình Ảnh Sự Kiện
+                </h4>
                 <div className="relative">
-                <input
-                  id="image-input"
-                  type="file"
+                  <input
+                    id="image-input"
+                    type="file"
                     accept="image/*"
-                  onChange={(e) => handleFileChange(e, "image")}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="image-input"
+                    onChange={(e) => handleFileChange(e, "image")}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="image-input"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                >
+                  >
                     {imagePreview ? (
                       <div className="relative w-full h-full">
                         <img
@@ -906,22 +944,38 @@ const CreateEvent: React.FC = () => {
                             >
                               Xem full size
                             </button>
-                            <span className="text-white text-xs">Click để thay đổi</span>
-              </div>
-            </div>
+                            <span className="text-white text-xs">
+                              Click để thay đổi
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     ) : (
                       <div className="text-center">
-                        <svg className="mx-auto h-8 w-8 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
-                          <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg
+                          className="mx-auto h-8 w-8 text-gray-400"
+                          stroke="currentColor"
+                          fill="none"
+                          viewBox="0 0 48 48"
+                        >
+                          <path
+                            d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
                         </svg>
-                        <span className="text-gray-600 text-sm">Chọn hình ảnh</span>
+                        <span className="text-gray-600 text-sm">
+                          Chọn hình ảnh
+                        </span>
                       </div>
                     )}
-              </label>
+                  </label>
                 </div>
                 {imageFileName && (
-                  <p className="text-xs text-gray-600 truncate">📎 {imageFileName}</p>
+                  <p className="text-xs text-gray-600 truncate">
+                    📎 {imageFileName}
+                  </p>
                 )}
               </div>
 
@@ -929,20 +983,20 @@ const CreateEvent: React.FC = () => {
               <div className="space-y-3">
                 <h4 className="font-medium text-gray-800">🎬 Banner/Video</h4>
                 <div className="relative">
-                <input
-                  id="banner-input"
-                  type="file"
+                  <input
+                    id="banner-input"
+                    type="file"
                     accept="image/*,video/*"
-                  onChange={(e) => handleFileChange(e, "banner")}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="banner-input"
+                    onChange={(e) => handleFileChange(e, "banner")}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="banner-input"
                     className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
-                >
+                  >
                     {bannerPreview ? (
                       <div className="relative w-full h-full">
-                        {bannerFile?.type.startsWith('video/') ? (
+                        {bannerFile?.type.startsWith("video/") ? (
                           <video
                             src={bannerPreview}
                             className="w-full h-full object-cover rounded-lg"
@@ -968,7 +1022,9 @@ const CreateEvent: React.FC = () => {
                                 >
                                   Xem full size
                                 </button>
-                                <span className="text-white text-xs">Click để thay đổi</span>
+                                <span className="text-white text-xs">
+                                  Click để thay đổi
+                                </span>
                               </div>
                             </div>
                           </>
@@ -976,16 +1032,30 @@ const CreateEvent: React.FC = () => {
                       </div>
                     ) : (
                       <div className="text-center">
-                        <svg className="mx-auto h-8 w-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <svg
+                          className="mx-auto h-8 w-8 text-gray-400"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
                         </svg>
-                        <span className="text-gray-600 text-sm">Chọn banner/video</span>
+                        <span className="text-gray-600 text-sm">
+                          Chọn banner/video
+                        </span>
                       </div>
                     )}
-                </label>
+                  </label>
                 </div>
                 {bannerFileName && (
-                  <p className="text-xs text-gray-600 truncate">📎 {bannerFileName}</p>
+                  <p className="text-xs text-gray-600 truncate">
+                    📎 {bannerFileName}
+                  </p>
                 )}
               </div>
             </div>
@@ -1018,8 +1088,18 @@ const CreateEvent: React.FC = () => {
               onClick={() => setShowImageModal(false)}
               className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-opacity z-10"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
             <img
@@ -1042,11 +1122,21 @@ const CreateEvent: React.FC = () => {
               onClick={() => setShowBannerModal(false)}
               className="absolute top-4 right-4 text-white bg-black bg-opacity-50 rounded-full p-2 hover:bg-opacity-75 transition-opacity z-10"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
-            {bannerFile?.type.startsWith('video/') ? (
+            {bannerFile?.type.startsWith("video/") ? (
               <video
                 src={bannerPreview}
                 className="max-w-full max-h-full object-contain rounded-lg"

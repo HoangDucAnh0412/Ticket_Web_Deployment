@@ -47,9 +47,9 @@ interface TicketSalePhasesProps {
 
 // Định nghĩa các endpoint rõ ràng
 const ADMIN_EVENT_PHASES_ENDPOINT = (eventId: string) =>
-  `${BASE_URL}/api/admin/events/${eventId}/phases`;
-const ADMIN_EVENT_PHASE_DELETE_ENDPOINT = (eventId: string, phaseId: number) =>
-  `${BASE_URL}/api/admin/events/${eventId}/phases/${phaseId}`;
+  `${BASE_URL}/api/admin/events//phases/${eventId}`;
+const ADMIN_EVENT_PHASE_DELETE_ENDPOINT = (phaseId: number) =>
+  `${BASE_URL}/api/admin/events/phases/${phaseId}`;
 
 const TicketSalePhases = ({
   eventId,
@@ -183,7 +183,7 @@ const TicketSalePhases = ({
         }
 
         await axios.delete(
-          ADMIN_EVENT_PHASE_DELETE_ENDPOINT(eventId, phaseId),
+          ADMIN_EVENT_PHASE_DELETE_ENDPOINT( phaseId),
           {
             headers: {
               Authorization: `Bearer ${token}`,

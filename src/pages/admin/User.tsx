@@ -28,7 +28,8 @@ interface User {
   updatedAt: string;
 }
 
-const ADMIN_USERS_ENDPOINT = `${BASE_URL}/api/admin/users`;
+const ADMIN_USERS_ENDPOINT = (page: number, size: number) =>
+  `${BASE_URL}/api/admin/users?page=${page}&size=${size}`;
 const ADMIN_USER_DELETE_ENDPOINT = (userId: number) =>
   `${BASE_URL}/api/admin/users/${userId}`;
 
@@ -41,6 +42,7 @@ const User = () => {
   const [totalPages, setTotalPages] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [allUsers, setAllUsers] = useState<User[]>([]); // Store all users for sorting/filtering
   const [pageInput, setPageInput] = useState<string>(
     (currentPage + 1).toString()
   );
@@ -54,7 +56,7 @@ const User = () => {
     []
   );
 
-  // Fetch users with search and sort parameters
+  // Fetch users for the current page
   useEffect(() => {
     const fetchUsers = async () => {
       try {
@@ -65,17 +67,8 @@ const User = () => {
           return;
         }
 
-        // Create query parameters
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          size: pageSize.toString(),
-          search: searchTerm,
-          sortBy: "userId",
-          sortDirection: sortDirection,
-        });
-
         const response = await axios.get(
-          `${ADMIN_USERS_ENDPOINT}?${params.toString()}`,
+          ADMIN_USERS_ENDPOINT(currentPage, pageSize),
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -93,7 +86,8 @@ const User = () => {
       } catch (error: any) {
         if (error.response) {
           setError(
-            `Lỗi: ${error.response.status} - ${error.response.data?.message || "Không thể tải danh sách user"
+            `Lỗi: ${error.response.status} - ${
+              error.response.data?.message || "Không thể tải danh sách user"
             }`
           );
         } else {
@@ -105,7 +99,72 @@ const User = () => {
     };
 
     fetchUsers();
-  }, [currentPage, pageSize, searchTerm, sortDirection]);
+  }, [currentPage, pageSize]);
+
+  // Fetch all users when sorting
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem("token");
+        if (!token) {
+          setError("Vui lòng đăng nhập để xem danh sách user");
+          return;
+        }
+
+        let allFetchedUsers: User[] = [];
+        let page = 0;
+        let totalPagesFromApi = 0;
+
+        do {
+          const response = await axios.get(
+            ADMIN_USERS_ENDPOINT(page, pageSize),
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.data && response.data.data) {
+            const paginatedData = response.data.data;
+            allFetchedUsers = [...allFetchedUsers, ...paginatedData.content];
+            totalPagesFromApi = paginatedData.totalPages;
+          }
+          page++;
+        } while (page < totalPagesFromApi);
+
+        setAllUsers(allFetchedUsers);
+      } catch (error: any) {
+        setError(
+          `Lỗi khi tải toàn bộ danh sách: ${
+            error.response?.data?.message || "Không thể tải dữ liệu"
+          }`
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllUsers();
+  }, [sortDirection, pageSize]);
+
+  // Filter and Sort (applied locally without triggering fetch)
+  const filteredAndSortedUsers = [...allUsers]
+    .filter(
+      (user) =>
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.phone.includes(searchTerm)
+    )
+    .sort((a, b) =>
+      sortDirection === "asc" ? a.userId - b.userId : b.userId - a.userId
+    );
+
+  // Paginate the filtered and sorted data
+  const paginatedUsers = filteredAndSortedUsers.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize
+  );
 
   const handleSort = () => {
     setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -256,7 +315,11 @@ const User = () => {
             className="px-3 py-2 rounded bg-green-500 text-white"
             title="Sắp xếp theo ID"
           >
-            {sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
+            {sortDirection === "asc" ? (
+              <FaSortAmountUp />
+            ) : (
+              <FaSortAmountDown />
+            )}
           </button>
         </div>
       </div>
@@ -280,8 +343,8 @@ const User = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
                   <tr key={user.userId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 border-b">{user.userId}</td>
                     <td className="px-6 py-4 border-b">{user.email}</td>
@@ -387,8 +450,9 @@ const User = () => {
                 <button
                   key={i}
                   onClick={() => handlePageChange(i)}
-                  className={`px-4 py-2 rounded ${currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
-                    }`}
+                  className={`px-4 py-2 rounded ${
+                    currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
+                  }`}
                 >
                   {i + 1}
                 </button>

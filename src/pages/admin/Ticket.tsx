@@ -405,18 +405,15 @@ const Ticket = () => {
     }
 
     return (
-        <div className="p-6 bg-gray-50 min-h-screen">
+        <div className="p-6 min-h-screen">
             <ToastContainer />
 
             {/* Header */}
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-blue-100 p-3 rounded-xl">
-                        <FaTicketAlt className="text-blue-600" size={24} />
-                    </div>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Ticket Management</h1>
-                        <p className="text-gray-600">Monitor and manage all system tickets</p>
+                        <h1 className="text-xl font-semibold text-black">Ticket Management</h1>
+                        <p className="text-l text-gray-500 mt-2">Monitor and manage all system tickets</p>
                     </div>
                 </div>
             </div>
