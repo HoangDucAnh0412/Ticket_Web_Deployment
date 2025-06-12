@@ -1,9 +1,10 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { FaChevronDown, FaChevronUp, FaPlus } from "react-icons/fa";
 import { BASE_URL } from "../../../utils/const";
+import MapCanvas from "./MapCanvas";
 
 interface Vertex {
   x: number;
@@ -39,7 +40,6 @@ const ADMIN_MAP_TEMPLATE_DETAIL_ENDPOINT = (id: string | undefined) =>
 const MapDetail: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [template, setTemplate] = useState<MapTemplate | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAreaListOpen, setIsAreaListOpen] = useState(false);
@@ -79,111 +79,6 @@ const MapDetail: React.FC = () => {
       fetchTemplate();
     }
   }, [id, navigate]);
-
-  // Draw Map on Canvas
-  useEffect(() => {
-    if (template && canvasRef.current && isMapVisualOpen) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
-
-      if (ctx) {
-        // Calculate scale to fit the canvas
-        const scale = Math.min(
-          800 / template.mapWidth,
-          800 / template.mapHeight
-        );
-        canvas.width = template.mapWidth * scale;
-        canvas.height = template.mapHeight * scale;
-
-        // Clear canvas
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        // Draw map outline
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 2;
-        ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-        // Draw areas
-        template.areas.forEach((area) => {
-          if (area.vertices && area.vertices.length > 0) {
-            ctx.beginPath();
-            ctx.moveTo(area.vertices[0].x * scale, area.vertices[0].y * scale);
-            for (let i = 1; i < area.vertices.length; i++) {
-              ctx.lineTo(
-                area.vertices[i].x * scale,
-                area.vertices[i].y * scale
-              );
-            }
-            ctx.closePath();
-            ctx.fillStyle = area.fillColor;
-            ctx.fill();
-            ctx.strokeStyle = "black";
-            ctx.lineWidth = 1;
-            ctx.stroke();
-
-            // Calculate centroid for label placement
-            let cx = 0,
-              cy = 0,
-              areaSum = 0;
-            for (let i = 0, len = area.vertices.length; i < len; i++) {
-              const v1 = area.vertices[i];
-              const v2 = area.vertices[(i + 1) % len];
-              const a = v1.x * v2.y - v2.x * v1.y;
-              areaSum += a;
-              cx += (v1.x + v2.x) * a;
-              cy += (v1.y + v2.y) * a;
-            }
-            areaSum *= 0.5;
-            cx = (cx / (6 * areaSum)) * scale;
-            cy = (cy / (6 * areaSum)) * scale;
-
-            // Find the two vertices with the largest horizontal distance
-            let maxHorzDist = 0,
-              horzV1 = area.vertices[0],
-              horzV2 = area.vertices[0];
-            for (let i = 0; i < area.vertices.length; i++) {
-              for (let j = i + 1; j < area.vertices.length; j++) {
-                const horzDist = Math.abs(
-                  area.vertices[i].x - area.vertices[j].x
-                );
-                if (horzDist > maxHorzDist) {
-                  maxHorzDist = horzDist;
-                  horzV1 = area.vertices[i];
-                  horzV2 = area.vertices[j];
-                }
-              }
-            }
-
-            // Determine label position
-            let labelX, labelY;
-            if (area.name.trim().toLowerCase() === "stage") {
-              labelX = ((horzV1.x + horzV2.x) / 2) * scale;
-              labelY = ((horzV1.y + horzV2.y) / 2) * scale;
-            } else {
-              labelX = cx;
-              labelY = cy;
-            }
-
-            // Draw area name
-            const nameWords = area.name.trim().split(/\s+/);
-            ctx.fillStyle = "white";
-            ctx.font = "bold 9px Arial";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            const lineHeight = 10;
-            const totalHeight = (nameWords.length - 1) * lineHeight;
-            nameWords.forEach((word, idx) => {
-              ctx.fillText(
-                word,
-                labelX,
-                labelY - totalHeight / 2 + idx * lineHeight
-              );
-            });
-          }
-        });
-      }
-    }
-  }, [template, isMapVisualOpen]);
 
   const handleCreateNewArea = () => {
     navigate(`/dashboard/map/${id}/area`);
@@ -369,10 +264,7 @@ const MapDetail: React.FC = () => {
                 </div>
               </div>
               <div className="relative">
-                <canvas
-                  ref={canvasRef}
-                  className="border border-gray-300 rounded-lg shadow-md w-full"
-                />
+                <MapCanvas template={template} maxSize={1200} />
               </div>
             </div>
           )}

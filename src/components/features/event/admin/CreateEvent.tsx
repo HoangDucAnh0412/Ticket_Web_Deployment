@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
 import { BASE_URL } from "../../../../utils/const";
+import MapCanvas from "../../map/MapCanvas";
 
 interface Area {
   name: string;
@@ -134,21 +135,6 @@ const CreateEvent: React.FC = () => {
       .then((resp) => {
         setTemplateAreas(resp.data.areas || []);
         setSelectedMapTemplate(resp.data);
-
-        // Automatically add stage areas to the event data
-        const stageAreas = resp.data.areas.filter((area) => area.stage);
-        if (stageAreas.length > 0) {
-          const newAreas = stageAreas.map((area) => ({
-            name: area.name,
-            templateAreaId: area.templateAreaId,
-            totalTickets: 0,
-            price: 0,
-          }));
-          setEventData((prev) => ({
-            ...prev,
-            areas: newAreas,
-          }));
-        }
       })
       .catch((err) =>
         toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
@@ -477,9 +463,7 @@ const CreateEvent: React.FC = () => {
         const selectedArea = templateAreas.find(
           (ta) => ta.templateAreaId === a.templateAreaId
         );
-        const isStageArea = selectedArea?.name
-          .toLowerCase()
-          .startsWith("stage");
+        const isStageArea = selectedArea?.stage;
 
         if (isStageArea) {
           return !a.name || a.templateAreaId === 0;
@@ -783,14 +767,22 @@ const CreateEvent: React.FC = () => {
                   </div>
                   <div className="border-2 border-gray-300 rounded-xl p-8 bg-white shadow-lg">
                     <div className="flex justify-center overflow-auto">
-                      <canvas
-                        ref={canvasRef}
-                        className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "800px",
-                          minHeight: "400px",
+                      <MapCanvas
+                        template={{
+                          ...selectedMapTemplate,
+                          areas: selectedMapTemplate.areas.map((area) => ({
+                            ...area,
+                            x: area.x || 0,
+                            y: area.y || 0,
+                            width: area.width || 0,
+                            height: area.height || 0,
+                            vertices: area.vertices || [],
+                            zone: area.zone || "",
+                            fillColor: area.fillColor || "",
+                          })),
                         }}
+                        selectedAreaIds={selectedAreaIds}
+                        maxSize={1200}
                       />
                     </div>
                   </div>
@@ -997,12 +989,31 @@ const CreateEvent: React.FC = () => {
                     {bannerPreview ? (
                       <div className="relative w-full h-full">
                         {bannerFile?.type.startsWith("video/") ? (
-                          <video
-                            src={bannerPreview}
-                            className="w-full h-full object-cover rounded-lg"
-                            controls
-                            muted
-                          />
+                          <div className="relative w-full h-full">
+                            <video
+                              src={bannerPreview}
+                              className="w-full h-full object-cover rounded-lg"
+                              controls
+                              muted
+                            />
+                            <div className="absolute inset-0 bg-black bg-opacity-40 rounded-lg flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                              <div className="flex flex-col items-center space-y-2">
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setShowBannerModal(true);
+                                  }}
+                                  className="bg-white text-gray-800 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
+                                >
+                                  Xem full size
+                                </button>
+                                <span className="text-white text-xs">
+                                  Click để thay đổi
+                                </span>
+                              </div>
+                            </div>
+                          </div>
                         ) : (
                           <>
                             <img
@@ -1137,22 +1148,24 @@ const CreateEvent: React.FC = () => {
               </svg>
             </button>
             {bannerFile?.type.startsWith("video/") ? (
-              <video
-                src={bannerPreview}
-                className="max-w-full max-h-full object-contain rounded-lg"
-                controls
-                autoPlay
-              />
+              <div className="relative">
+                <video
+                  src={bannerPreview}
+                  className="max-w-full max-h-[80vh] object-contain rounded-lg"
+                  controls
+                  autoPlay
+                />
+                <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
+                  {bannerFileName}
+                </div>
+              </div>
             ) : (
               <img
                 src={bannerPreview}
                 alt="Full Size Banner Preview"
-                className="max-w-full max-h-full object-contain rounded-lg"
+                className="max-w-full max-h-[80vh] object-contain rounded-lg"
               />
             )}
-            <div className="absolute bottom-4 left-4 bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-              {bannerFileName}
-            </div>
           </div>
         </div>
       )}

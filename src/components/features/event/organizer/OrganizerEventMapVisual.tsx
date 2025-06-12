@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa";
 import { BASE_URL } from "../../../../utils/const";
+import MapCanvas from "../../map/MapCanvas";
 
 interface Vertex {
   x: number;
@@ -48,7 +49,6 @@ const ORGANIZER_EVENT_AREAS_ENDPOINT = (eventId: string) =>
   `${BASE_URL}/api/organizer/events/${eventId}/areas`;
 
 const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mapTemplate, setMapTemplate] = useState<MapTemplate | null>(null);
   const [eventAreas, setEventAreas] = useState<EventArea[]>([]);
   const [loading, setLoading] = useState(true);
@@ -76,7 +76,17 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
         );
 
         if (foundTemplate) {
-          setMapTemplate(foundTemplate);
+          // Filter areas to only include those that are in eventAreas
+          const selectedAreaIds = areasRes.data.data.map(
+            (area) => area.templateAreaId
+          );
+          const filteredTemplate = {
+            ...foundTemplate,
+            areas: foundTemplate.areas.filter((area) =>
+              selectedAreaIds.includes(area.templateAreaId)
+            ),
+          };
+          setMapTemplate(filteredTemplate);
         } else {
           console.error("Map template not found");
         }
@@ -90,122 +100,6 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
 
     fetchData();
   }, [eventId, mapTemplateId]);
-
-  const drawMap = () => {
-    if (!mapTemplate || !canvasRef.current || eventAreas.length === 0) return;
-
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Calculate scale to fit the canvas
-    const scale = Math.min(
-      800 / mapTemplate.mapWidth,
-      800 / mapTemplate.mapHeight
-    );
-    canvas.width = mapTemplate.mapWidth * scale;
-    canvas.height = mapTemplate.mapHeight * scale;
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Draw map outline
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 2;
-    ctx.strokeRect(0, 0, canvas.width, canvas.height);
-
-    // Filter template areas to only show those that exist in event areas
-    const eventAreaIds = eventAreas.map((area) => area.templateAreaId);
-    const relevantAreas = mapTemplate.areas.filter((area) =>
-      eventAreaIds.includes(area.templateAreaId)
-    );
-
-    // Draw areas
-    relevantAreas.forEach((area) => {
-      if (area.vertices && area.vertices.length > 0) {
-        ctx.beginPath();
-        ctx.moveTo(area.vertices[0].x * scale, area.vertices[0].y * scale);
-        for (let i = 1; i < area.vertices.length; i++) {
-          ctx.lineTo(area.vertices[i].x * scale, area.vertices[i].y * scale);
-        }
-        ctx.closePath();
-        ctx.fillStyle = area.fillColor;
-        ctx.fill();
-        ctx.strokeStyle = "black";
-        ctx.lineWidth = 1;
-        ctx.stroke();
-
-        // Calculate centroid for label placement
-        let cx = 0,
-          cy = 0,
-          areaSum = 0;
-        for (let i = 0, len = area.vertices.length; i < len; i++) {
-          const v1 = area.vertices[i];
-          const v2 = area.vertices[(i + 1) % len];
-          const a = v1.x * v2.y - v2.x * v1.y;
-          areaSum += a;
-          cx += (v1.x + v2.x) * a;
-          cy += (v1.y + v2.y) * a;
-        }
-        areaSum *= 0.5;
-        cx = (cx / (6 * areaSum)) * scale;
-        cy = (cy / (6 * areaSum)) * scale;
-
-        // Find the two vertices with the largest horizontal distance
-        let maxHorzDist = 0,
-          horzV1 = area.vertices[0],
-          horzV2 = area.vertices[0];
-        for (let i = 0; i < area.vertices.length; i++) {
-          for (let j = i + 1; j < area.vertices.length; j++) {
-            const horzDist = Math.abs(area.vertices[i].x - area.vertices[j].x);
-            if (horzDist > maxHorzDist) {
-              maxHorzDist = horzDist;
-              horzV1 = area.vertices[i];
-              horzV2 = area.vertices[j];
-            }
-          }
-        }
-
-        // Determine label position
-        let labelX, labelY;
-        const eventArea = eventAreas.find(
-          (ea) => ea.templateAreaId === area.templateAreaId
-        );
-        if (eventArea && eventArea.name.trim().toLowerCase() === "stage") {
-          labelX = ((horzV1.x + horzV2.x) / 2) * scale;
-          labelY = ((horzV1.y + horzV2.y) / 2) * scale;
-        } else {
-          labelX = cx;
-          labelY = cy;
-        }
-
-        // Draw area name
-        const displayName = eventArea ? eventArea.name : area.name;
-        const nameWords = displayName.trim().split(/\s+/);
-        ctx.fillStyle = "white";
-        ctx.font = "bold 9px Arial";
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        const lineHeight = 10;
-        const totalHeight = (nameWords.length - 1) * lineHeight;
-        nameWords.forEach((word, idx) => {
-          ctx.fillText(
-            word,
-            labelX,
-            labelY - totalHeight / 2 + idx * lineHeight
-          );
-        });
-      }
-    });
-  };
-
-  // Effect to draw map when data is loaded or when opened
-  useEffect(() => {
-    if (isOpen && mapTemplate && eventAreas.length > 0) {
-      // Small delay to ensure the canvas is visible
-      setTimeout(drawMap, 100);
-    }
-  }, [isOpen, mapTemplate, eventAreas]);
 
   if (loading) {
     return <div className="p-4 text-center">Loading map...</div>;
@@ -280,9 +174,10 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
               </div>
             </div>
             <div className="relative">
-              <canvas
-                ref={canvasRef}
-                className="border border-gray-300 rounded-lg shadow-md w-full"
+              <MapCanvas
+                template={mapTemplate}
+                maxSize={800}
+                showLabels={true}
               />
             </div>
           </div>

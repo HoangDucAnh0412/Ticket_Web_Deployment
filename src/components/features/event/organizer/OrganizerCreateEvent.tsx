@@ -4,6 +4,7 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useNavigate, Link } from "react-router-dom";
 import { BASE_URL } from "../../../../utils/const";
+import MapCanvas from "../../map/MapCanvas";
 
 interface Area {
   name: string;
@@ -32,13 +33,13 @@ interface Vertex {
 interface TemplateArea {
   templateAreaId: number;
   name: string;
-  x?: number;
-  y?: number;
-  width?: number;
-  height?: number;
-  vertices?: Vertex[];
-  zone?: string;
-  fillColor?: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  vertices: Vertex[];
+  zone: string;
+  fillColor: string;
   stage: boolean;
 }
 
@@ -134,11 +135,26 @@ const OrganizerCreateEvent: React.FC = () => {
         }
       )
       .then((resp) => {
-        setTemplateAreas(resp.data.areas || []);
-        setSelectedMapTemplate(resp.data);
+        // Ensure all required properties are present
+        const processedAreas = resp.data.areas.map((area) => ({
+          ...area,
+          x: area.x || 0,
+          y: area.y || 0,
+          width: area.width || 0,
+          height: area.height || 0,
+          vertices: area.vertices || [],
+          zone: area.zone || "",
+          fillColor: area.fillColor || "#e2e8f0",
+        }));
+
+        setTemplateAreas(processedAreas);
+        setSelectedMapTemplate({
+          ...resp.data,
+          areas: processedAreas,
+        });
 
         // Automatically add stage areas to the event data
-        const stageAreas = resp.data.areas.filter((area) => area.stage);
+        const stageAreas = processedAreas.filter((area) => area.stage);
         if (stageAreas.length > 0) {
           const newAreas = stageAreas.map((area) => ({
             name: area.name,
@@ -158,7 +174,18 @@ const OrganizerCreateEvent: React.FC = () => {
           (t) => t.templateId === eventData.mapTemplateId
         );
         if (selectedTemplate) {
-          setTemplateAreas(selectedTemplate.areas || []);
+          const processedAreas = selectedTemplate.areas.map((area) => ({
+            ...area,
+            x: area.x || 0,
+            y: area.y || 0,
+            width: area.width || 0,
+            height: area.height || 0,
+            vertices: area.vertices || [],
+            zone: area.zone || "",
+            fillColor: area.fillColor || "#e2e8f0",
+          }));
+
+          setTemplateAreas(processedAreas);
           // Create a basic MapTemplate object for preview
           setSelectedMapTemplate({
             templateId: selectedTemplate.templateId,
@@ -167,7 +194,7 @@ const OrganizerCreateEvent: React.FC = () => {
             areaCount: selectedTemplate.areas?.length || 0,
             mapWidth: 1000,
             mapHeight: 1000,
-            areas: selectedTemplate.areas || [],
+            areas: processedAreas,
           });
         } else {
           setTemplateAreas([]);
@@ -802,14 +829,11 @@ const OrganizerCreateEvent: React.FC = () => {
                   </div>
                   <div className="border-2 border-gray-300 rounded-xl p-8 bg-white shadow-lg">
                     <div className="flex justify-center overflow-auto">
-                      <canvas
-                        ref={canvasRef}
-                        className="max-w-full h-auto rounded-lg shadow-lg border border-gray-200"
-                        style={{
-                          maxWidth: "100%",
-                          maxHeight: "800px",
-                          minHeight: "400px",
-                        }}
+                      <MapCanvas
+                        template={selectedMapTemplate}
+                        selectedAreaIds={selectedAreaIds}
+                        maxSize={1200}
+                        showLabels={true}
                       />
                     </div>
                   </div>

@@ -94,16 +94,10 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
     if (
       !updatedTemplate.name ||
       !updatedTemplate.description ||
-      updatedTemplate.areaCount <= 0 ||
       updatedTemplate.mapWidth <= 0 ||
       updatedTemplate.mapHeight <= 0
     ) {
       toast.error("Vui lòng điền đầy đủ các trường bắt buộc.");
-      return;
-    }
-
-    if (updatedTemplate.areas.length !== updatedTemplate.areaCount) {
-      toast.error("Số lượng khu vực không khớp với areaCount.");
       return;
     }
 
@@ -297,11 +291,9 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
             <input
               type="number"
               name="areaCount"
-              value={updatedTemplate.areaCount}
-              onChange={handleInputChange}
-              required
-              min="1"
-              className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+              value={updatedTemplate.areas.length}
+              disabled
+              className="mt-1 block w-full p-2 bg-gray-200 border border-gray-300 rounded-md"
             />
           </div>
           <div>
