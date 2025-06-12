@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { BASE_URL } from "../../../../utils/const";
 
 interface Event {
   eventId: number;
@@ -31,6 +32,12 @@ interface MapTemplate {
   description: string;
 }
 
+// Define endpoint constants
+const ADMIN_EVENT_ENDPOINT = (eventId: string | number) =>
+  `${BASE_URL}/api/admin/events/${eventId}`;
+const ADMIN_CATEGORIES_ENDPOINT = `${BASE_URL}/api/admin/categories`;
+const ADMIN_MAP_TEMPLATES_ENDPOINT = `${BASE_URL}/api/admin/map-templates`;
+
 const UpdateEvent = () => {
   const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
@@ -56,28 +63,22 @@ const UpdateEvent = () => {
         }
 
         // Fetch event data
-        const eventResponse = await axios.get(
-          `http://localhost:8085/api/admin/events/${eventId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const eventResponse = await axios.get(ADMIN_EVENT_ENDPOINT(eventId!), {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         // Fetch categories
-        const categoriesResponse = await axios.get(
-          "http://localhost:8085/api/admin/categories",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
+        const categoriesResponse = await axios.get(ADMIN_CATEGORIES_ENDPOINT, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
         // Fetch map templates
         const mapTemplatesResponse = await axios.get(
-          "http://localhost:8085/api/admin/map-templates",
+          ADMIN_MAP_TEMPLATES_ENDPOINT,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -173,15 +174,11 @@ const UpdateEvent = () => {
         data.append("banner", bannerFile);
       }
 
-      await axios.put(
-        `http://localhost:8085/api/admin/events/${eventId}`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.put(ADMIN_EVENT_ENDPOINT(eventId!), data, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       toast.success("Cập nhật sự kiện thành công!", {
         position: "top-right",
@@ -199,7 +196,7 @@ const UpdateEvent = () => {
       console.error("Lỗi khi cập nhật sự kiện:", error);
       const errorMessage =
         error.code === "ERR_NETWORK"
-          ? "Không thể kết nối đến server. Vui lòng kiểm tra server tại http://localhost:8085."
+          ? `Không thể kết nối đến server. Vui lòng kiểm tra server tại ${BASE_URL}.`
           : error.response?.data?.message ||
             error.message ||
             "Không thể cập nhật sự kiện. Vui lòng kiểm tra server.";

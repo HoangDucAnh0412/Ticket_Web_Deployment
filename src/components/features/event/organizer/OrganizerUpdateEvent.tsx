@@ -201,7 +201,7 @@ const OrganizerUpdateEvent = () => {
       console.error("Lỗi khi cập nhật sự kiện:", error);
       const errorMessage =
         error.code === "ERR_NETWORK"
-          ? "Không thể kết nối đến server. Vui lòng kiểm tra server tại http://localhost:8085."
+          ? "Không thể kết nối đến server."
           : error.response?.data?.message ||
             error.message ||
             "Không thể cập nhật sự kiện. Vui lòng kiểm tra server.";
