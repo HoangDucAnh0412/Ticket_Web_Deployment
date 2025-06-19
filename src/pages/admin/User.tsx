@@ -485,12 +485,6 @@ const User = () => {
         <FaPlus />
       </Link>
 
-      {showPerformanceWarning && (
-        <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">
-          Warning: There are a large number of users. Search and sort
-          performance may be slow.
-        </div>
-      )}
     </div>
   );
 };
