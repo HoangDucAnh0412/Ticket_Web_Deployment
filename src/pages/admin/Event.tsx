@@ -49,7 +49,7 @@ const Event = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực.");
+        toast.error("No authentication token found.");
         return;
       }
 
@@ -63,8 +63,8 @@ const Event = () => {
       setEvents(response.data);
       setFilteredEvents(response.data);
     } catch (error: any) {
-      console.error("Lỗi khi lấy danh sách sự kiện:", error);
-      toast.error("Đã xảy ra lỗi khi lấy danh sách sự kiện.");
+      console.error("Error fetching event list:", error);
+      toast.error("An error occurred while fetching event list.");
     }
   };
 
@@ -122,21 +122,21 @@ const Event = () => {
 
   const handleDeleteEvent = async (eventId: number) => {
     const confirm = await Swal.fire({
-      title: "Bạn có chắc muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Are you sure you want to delete?",
+      text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "grey",
       cancelButtonColor: "red",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (confirm.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Không tìm thấy token xác thực.");
+          toast.error("No authentication token found.");
           return;
         }
 
@@ -150,10 +150,10 @@ const Event = () => {
         const updated = events.filter((event) => event.eventId !== eventId);
         setEvents(updated);
         setFilteredEvents(updated);
-        toast.success("Xóa sự kiện thành công!");
+        toast.success("Event deleted successfully!");
       } catch (error: any) {
-        console.error("Lỗi khi xóa sự kiện:", error);
-        toast.error("Đã xảy ra lỗi khi xóa sự kiện.");
+        console.error("Error deleting event:", error);
+        toast.error("An error occurred while deleting event.");
       }
     }
   };
@@ -239,7 +239,7 @@ const Event = () => {
           <button
             onClick={() => handleSort("eventId")}
             className="px-3 py-2 rounded bg-green-500 text-white"
-            title="Sắp xếp theo ID"
+            title="Sort by ID"
           >
             {sortField === "eventId" && sortDirection === "asc" ? (
               <FaSortAmountUp />
@@ -250,7 +250,7 @@ const Event = () => {
           <button
             onClick={() => handleSort("dateTime")}
             className="px-3 py-2 rounded bg-amber-700 text-white"
-            title="Sắp xếp theo Date & Time"
+            title="Sort by Date & Time"
           >
             {sortField === "dateTime" && sortDirection === "asc" ? (
               <LuClockArrowUp />
@@ -313,21 +313,21 @@ const Event = () => {
                       <button
                         onClick={() => handleShowUpdate(event)}
                         className="bg-sky-500 text-white px-3 py-2 rounded hover:bg-sky-600"
-                        title="Chỉnh sửa"
+                        title="Edit"
                       >
                         <FaEdit />
                       </button>
                       <button
                         onClick={() => handleDeleteEvent(event.eventId)}
                         className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
-                        title="Xóa"
+                        title="Delete"
                       >
                         <FaTrash />
                       </button>
                       <button
                         onClick={() => handleShowDetail(event)}
                         className="bg-purple-500 text-white px-3 py-2 rounded hover:bg-purple-600"
-                        title="Chi tiết"
+                        title="Details"
                       >
                         <FaInfoCircle />
                       </button>
@@ -382,7 +382,7 @@ const Event = () => {
       <Link
         to="/dashboard/event/create"
         className="fixed bottom-6 right-6 bg-yellow-500 text-white p-4 rounded-full shadow-lg hover:bg-yellow-600"
-        title="Thêm sự kiện"
+        title="Add event"
       >
         <FaPlus />
       </Link>

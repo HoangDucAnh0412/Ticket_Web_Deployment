@@ -32,13 +32,13 @@ const CreateUser: React.FC = () => {
   const [userData, setUserData] = useState<UserData>(initialUserData);
   const [errors, setErrors] = useState<Partial<UserData>>({});
 
-  // Hàm validate email
+  // Email validation function
   const validateEmail = (email: string) => {
     const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
     return emailRegex.test(email);
   };
 
-  // Hàm validate số điện thoại (định dạng Việt Nam)
+  // Phone validation function (Vietnam format)
   const validatePhone = (phone: string) => {
     const phoneRegex = /(84|0[3|5|7|8|9])+([0-9]{8})\b/;
     return phoneRegex.test(phone);
@@ -53,18 +53,18 @@ const CreateUser: React.FC = () => {
       [name]: value,
     }));
 
-    // Xóa lỗi khi người dùng bắt đầu nhập lại
+    // Remove error when user starts typing again
     setErrors((prev) => ({
       ...prev,
       [name]: "",
     }));
 
-    // Validate realtime
+    // Realtime validation
     if (name === "email" && value) {
       if (!validateEmail(value)) {
         setErrors((prev) => ({
           ...prev,
-          email: "Email không đúng định dạng",
+          email: "Invalid email format",
         }));
       }
     }
@@ -73,7 +73,7 @@ const CreateUser: React.FC = () => {
       if (!validatePhone(value)) {
         setErrors((prev) => ({
           ...prev,
-          phone: "Số điện thoại không đúng định dạng",
+          phone: "Invalid phone number format",
         }));
       }
     }
@@ -84,36 +84,36 @@ const CreateUser: React.FC = () => {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo người dùng.");
+      toast.error("You need to log in to create a user.");
       return;
     }
 
-    // Validate tất cả các trường
+    // Validate all fields
     const newErrors: Partial<UserData> = {};
     if (!userData.username) {
-      newErrors.username = "Vui lòng nhập tên đăng nhập";
+      newErrors.username = "Please enter a username";
     }
     if (!userData.password) {
-      newErrors.password = "Vui lòng nhập mật khẩu";
+      newErrors.password = "Please enter a password";
     }
     if (!userData.email) {
-      newErrors.email = "Vui lòng nhập email";
+      newErrors.email = "Please enter an email";
     } else if (!validateEmail(userData.email)) {
-      newErrors.email = "Email không đúng định dạng";
+      newErrors.email = "Invalid email format";
     }
     if (!userData.fullName) {
-      newErrors.fullName = "Vui lòng nhập họ và tên";
+      newErrors.fullName = "Please enter full name";
     }
     if (!userData.phone) {
-      newErrors.phone = "Vui lòng nhập số điện thoại";
+      newErrors.phone = "Please enter a phone number";
     } else if (!validatePhone(userData.phone)) {
-      newErrors.phone = "Số điện thoại không đúng định dạng";
+      newErrors.phone = "Invalid phone number format";
     }
 
-    // Nếu có lỗi, hiển thị và dừng việc submit
+    // If there are errors, show and stop submit
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
-      toast.error("Vui lòng kiểm tra lại thông tin");
+      toast.error("Please check your information");
       return;
     }
 
@@ -127,7 +127,7 @@ const CreateUser: React.FC = () => {
       });
 
       if (response.status === 201 || response.status === 200) {
-        toast.success("Tạo người dùng thành công!");
+        toast.success("User created successfully!");
         setUserData(initialUserData);
         setTimeout(() => {
           navigate("/dashboard/user");
@@ -136,15 +136,15 @@ const CreateUser: React.FC = () => {
     } catch (error: any) {
       const msg = error.response?.data?.message || error.message;
       if (error.response?.status === 403) {
-        toast.error("Vui lòng kiểm tra lại thông tin vì có thể bị trùng lặp!");
+        toast.error("Please check your information, there may be duplicates!");
       } else if (msg.includes("username")) {
-        toast.error("Tên đăng nhập đã tồn tại!");
+        toast.error("Username already exists!");
       } else if (msg.includes("email")) {
-        toast.error("Email đã tồn tại!");
+        toast.error("Email already exists!");
       } else if (msg.includes("phone")) {
-        toast.error("Số điện thoại đã tồn tại!");
+        toast.error("Phone number already exists!");
       } else {
-        toast.error(`Có lỗi xảy ra: ${msg}`);
+        toast.error(`An error occurred: ${msg}`);
       }
     }
   };
@@ -174,14 +174,14 @@ const CreateUser: React.FC = () => {
       {/* Main content */}
       <div className="px-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Tạo Người Dùng Mới
+          Create New User
         </h2>
 
         <form className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Tên đăng nhập
+                Username
               </label>
               <input
                 type="text"
@@ -199,7 +199,7 @@ const CreateUser: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Mật khẩu
+                Password
               </label>
               <input
                 type="password"
@@ -238,7 +238,7 @@ const CreateUser: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Vai trò
+                Role
               </label>
               <select
                 name="role"
@@ -256,7 +256,7 @@ const CreateUser: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Họ và tên
+                Full Name
               </label>
               <input
                 type="text"
@@ -274,7 +274,7 @@ const CreateUser: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Số điện thoại
+                Phone Number
               </label>
               <input
                 type="text"
@@ -282,7 +282,7 @@ const CreateUser: React.FC = () => {
                 value={userData.phone}
                 onChange={handleInputChange}
                 required
-                placeholder="VD: 0987654321"
+                placeholder="e.g. 0987654321"
                 className={`mt-1 block w-full p-2 border ${
                   errors.phone ? "border-red-500" : "border-gray-300"
                 } rounded-md focus:ring-indigo-500 focus:border-indigo-500`}
@@ -295,7 +295,7 @@ const CreateUser: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Địa chỉ
+              Address
             </label>
             <input
               type="text"
@@ -312,14 +312,14 @@ const CreateUser: React.FC = () => {
               onClick={handleCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmit}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Tạo người dùng
+              Create User
             </button>
           </div>
         </form>

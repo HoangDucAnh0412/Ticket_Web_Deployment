@@ -57,7 +57,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
+          toast.error("You need to log in to perform this operation");
           return;
         }
 
@@ -95,7 +95,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
+        toast.error("You need to log in to perform this operation");
         return;
       }
 
@@ -114,7 +114,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
         }
       );
 
-      toast.success("Cập nhật khu vực thành công!");
+      toast.success("Update area successfully!");
 
       setAreas((prevAreas) =>
         prevAreas.map((area) =>
@@ -130,27 +130,27 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
       setEditingArea(null);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
     }
   };
 
   const handleDeleteArea = async (areaId: number) => {
     const result = await Swal.fire({
-      title: "Bạn có chắc muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Are you sure you want to delete?",
+      text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "grey",
       cancelButtonColor: "red",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
+          toast.error("You need to log in to perform this operation");
           return;
         }
 
@@ -160,13 +160,13 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           },
         });
 
-        toast.success("Xóa khu vực thành công!");
+        toast.success("Delete area successfully!");
         setAreas((prevAreas) =>
           prevAreas.filter((area) => area.areaId !== areaId)
         );
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message;
-        toast.error(`Có lỗi xảy ra: ${msg}`);
+        toast.error(`An error occurred: ${msg}`);
       }
     }
   };
@@ -179,9 +179,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
     <div className="mt-2">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">
-            Tên khu vực
-          </label>
+          <label className="block text-gray-600 text-sm mb-1">Area Name</label>
           {editingArea?.areaId === area.areaId ? (
             <input
               type="text"
@@ -204,7 +202,9 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           )}
         </div>
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">Tổng số vé</label>
+          <label className="block text-gray-600 text-sm mb-1">
+            Total Tickets
+          </label>
           {editingArea?.areaId === area.areaId ? (
             <input
               type="number"
@@ -228,7 +228,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 text-sm mb-1">
-            Số vé còn lại
+            Available Tickets
           </label>
           <input
             type="text"
@@ -238,7 +238,9 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           />
         </div>
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">Giá vé</label>
+          <label className="block text-gray-600 text-sm mb-1">
+            Ticket Price
+          </label>
           {editingArea?.areaId === area.areaId ? (
             <input
               type="number"
@@ -269,14 +271,14 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
               className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
             >
               <FaSave />
-              Lưu
+              Save
             </button>
             <button
               onClick={handleCancelEdit}
               className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
             >
               <FaTimes />
-              Hủy
+              Cancel
             </button>
           </>
         ) : (
@@ -286,14 +288,14 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
               className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
               <FaEdit />
-              Cập nhật
+              Update
             </button>
             <button
               onClick={() => handleDeleteArea(area.areaId)}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
             >
               <FaTrash />
-              Xóa
+              Delete
             </button>
           </>
         )}
@@ -321,9 +323,9 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
           onClick={() => setIsOpen(!isOpen)}
         >
           <div className="flex items-center gap-4">
-            <span className="font-semibold text-base">Danh sách khu vực</span>
+            <span className="font-semibold text-base">Area List</span>
             <span className="text-gray-500 text-sm">
-              ({areas.length} Khu vực)
+              ({areas.length} Areas)
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -335,8 +337,8 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
                   : "bg-green-50 border-green-400 text-green-700"
               }`}
             >
-              {areas.reduce((sum, area) => sum + area.availableTickets, 0)} Vé
-              còn lại
+              {areas.reduce((sum, area) => sum + area.availableTickets, 0)}{" "}
+              Tickets Remaining
             </span>
             {isOpen ? <FaChevronUp /> : <FaChevronDown />}
           </div>
@@ -364,7 +366,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
                           {area.name}
                         </span>
                         <span className="text-gray-500 text-sm">
-                          {area.totalTickets} Vé
+                          {area.totalTickets} Tickets
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -375,7 +377,7 @@ const EventAreas = ({ eventId }: EventAreasProps) => {
                               : "bg-green-50 border-green-400 text-green-700"
                           }`}
                         >
-                          {area.availableTickets} Vé còn lại
+                          {area.availableTickets} Tickets Remaining
                         </span>
                         {isAreaOpen ? <FaChevronUp /> : <FaChevronDown />}
                       </div>

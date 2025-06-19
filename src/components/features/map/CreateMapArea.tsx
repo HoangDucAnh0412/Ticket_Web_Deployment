@@ -58,12 +58,12 @@ const CreateMapArea: React.FC = () => {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo khu vực.");
+      toast.error("You need to log in to create an area.");
       return;
     }
 
     if (!area.name) {
-      toast.error("Vui lòng nhập tên khu vực.");
+      toast.error("Please enter the area name.");
       return;
     }
 
@@ -72,7 +72,7 @@ const CreateMapArea: React.FC = () => {
       !Array.isArray(area.vertices) ||
       area.vertices.length === 0
     ) {
-      toast.error("Vui lòng nhập vertices cho khu vực.");
+      toast.error("Please enter vertices for the area.");
       return;
     }
 
@@ -80,7 +80,7 @@ const CreateMapArea: React.FC = () => {
       (v) => typeof v.x !== "number" || typeof v.y !== "number"
     );
     if (invalidVertices) {
-      toast.error("Vertices phải có định dạng {x: number, y: number}");
+      toast.error("Vertices must be in the format {x: number, y: number}");
       return;
     }
 
@@ -90,7 +90,9 @@ const CreateMapArea: React.FC = () => {
       (area.width !== null && area.width < 0) ||
       (area.height !== null && area.height < 0)
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm.");
+      toast.error(
+        "Invalid area information. Negative numbers are not allowed."
+      );
       return;
     }
 
@@ -126,7 +128,7 @@ const CreateMapArea: React.FC = () => {
       console.log("API Response:", response.data);
 
       if (response.status === 200 || response.status === 201) {
-        toast.success("Khu vực đã được tạo thành công!", {
+        toast.success("Area created successfully!", {
           position: "top-right",
           autoClose: 2000,
           hideProgressBar: false,
@@ -139,7 +141,7 @@ const CreateMapArea: React.FC = () => {
           navigate(`/dashboard/map/${id}`);
         }, 2000);
       } else {
-        toast.error("Có lỗi xảy ra khi tạo khu vực.");
+        toast.error("An error occurred while creating the area.");
       }
     } catch (err: any) {
       console.error("Error creating area:", err);
@@ -148,13 +150,13 @@ const CreateMapArea: React.FC = () => {
         console.error("Error response status:", err.response.status);
         console.error("Error response headers:", err.response.headers);
         const msg = err.response.data?.message || err.message;
-        toast.error(`Có lỗi xảy ra: ${msg}`);
+        toast.error(`An error occurred: ${msg}`);
       } else if (err.request) {
         console.error("Error request:", err.request);
-        toast.error("Không thể kết nối đến server.");
+        toast.error("Cannot connect to the server.");
       } else {
         console.error("Error message:", err.message);
-        toast.error("Có lỗi xảy ra khi xử lý yêu cầu.");
+        toast.error("An error occurred while processing the request.");
       }
     }
   };
@@ -178,15 +180,13 @@ const CreateMapArea: React.FC = () => {
         theme="light"
       />
 
-      <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Thêm Khu Vực Mới
-      </h2>
+      <h2 className="text-2xl font-bold mb-6 text-gray-800">Add New Area</h2>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Tên khu vực
+              Area Name
             </label>
             <input
               type="text"
@@ -214,7 +214,7 @@ const CreateMapArea: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Tọa độ X
+              X Coordinate
             </label>
             <input
               type="number"
@@ -228,7 +228,7 @@ const CreateMapArea: React.FC = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Tọa độ Y
+              Y Coordinate
             </label>
             <input
               type="number"
@@ -245,7 +245,7 @@ const CreateMapArea: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều rộng
+              Width
             </label>
             <input
               type="number"
@@ -259,7 +259,7 @@ const CreateMapArea: React.FC = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều cao
+              Height
             </label>
             <input
               type="number"
@@ -275,7 +275,7 @@ const CreateMapArea: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium mb-1 text-gray-700">
-            Màu khu vực
+            Area Color
           </label>
           <div className="flex items-center gap-2">
             <input
@@ -310,7 +310,7 @@ const CreateMapArea: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Khu vực là STAGE
+            Is STAGE Area
           </label>
           <input
             type="checkbox"
@@ -323,7 +323,7 @@ const CreateMapArea: React.FC = () => {
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Vertices (dán JSON array)
+            Vertices (paste JSON array)
           </label>
           <textarea
             value={JSON.stringify(area.vertices || [], null, 2)}
@@ -340,11 +340,11 @@ const CreateMapArea: React.FC = () => {
                   setArea({ ...area, vertices: parsed });
                 } else {
                   toast.error(
-                    "Dữ liệu vertices phải là mảng các object có x, y dạng số."
+                    "Vertices data must be an array of objects with x, y as numbers."
                   );
                 }
               } catch {
-                toast.error("Dữ liệu vertices không hợp lệ.");
+                toast.error("Invalid vertices data.");
               }
             }}
             rows={4}
@@ -362,13 +362,13 @@ const CreateMapArea: React.FC = () => {
             onClick={handleCancel}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
           >
-            Hủy
+            Cancel
           </button>
           <button
             type="submit"
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Tạo khu vực
+            Create Area
           </button>
         </div>
       </form>

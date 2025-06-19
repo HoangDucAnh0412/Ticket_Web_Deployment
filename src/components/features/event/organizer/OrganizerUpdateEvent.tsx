@@ -57,7 +57,7 @@ const OrganizerUpdateEvent = () => {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Vui lòng đăng nhập để tiếp tục");
+          toast.error("Please log in to continue");
           navigate("/login");
           return;
         }
@@ -104,7 +104,7 @@ const OrganizerUpdateEvent = () => {
         setMapTemplates(mapTemplatesResponse.data);
       } catch (error: any) {
         console.error("Error fetching data:", error);
-        toast.error(error.response?.data?.message || "Không thể tải thông tin");
+        toast.error(error.response?.data?.message || "Unable to load data");
       } finally {
         setLoading(false);
       }
@@ -142,11 +142,11 @@ const OrganizerUpdateEvent = () => {
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
-    if (!formData.name?.trim()) newErrors.name = "Tên sự kiện là bắt buộc.";
-    if (!formData.date) newErrors.date = "Ngày là bắt buộc.";
-    if (!formData.time) newErrors.time = "Giờ là bắt buộc.";
+    if (!formData.name?.trim()) newErrors.name = "Event name is required.";
+    if (!formData.date) newErrors.date = "Date is required.";
+    if (!formData.time) newErrors.time = "Time is required.";
     if (!formData.location?.trim())
-      newErrors.location = "Địa điểm là bắt buộc.";
+      newErrors.location = "Location is required.";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -155,14 +155,14 @@ const OrganizerUpdateEvent = () => {
     e.preventDefault();
 
     if (!validateForm()) {
-      toast.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực.");
+        toast.error("Unable to find authentication token.");
         return;
       }
 
@@ -185,7 +185,7 @@ const OrganizerUpdateEvent = () => {
         },
       });
 
-      toast.success("Cập nhật sự kiện thành công!", {
+      toast.success("Event update successful!", {
         position: "top-right",
         autoClose: 2000,
         hideProgressBar: false,
@@ -198,14 +198,14 @@ const OrganizerUpdateEvent = () => {
         navigate("/organizer/events");
       }, 2000);
     } catch (error: any) {
-      console.error("Lỗi khi cập nhật sự kiện:", error);
+      console.error("Error updating event:", error);
       const errorMessage =
         error.code === "ERR_NETWORK"
-          ? "Không thể kết nối đến server."
+          ? "Unable to connect to server."
           : error.response?.data?.message ||
             error.message ||
-            "Không thể cập nhật sự kiện. Vui lòng kiểm tra server.";
-      toast.error(`Lỗi: ${errorMessage}`, {
+            "Unable to update event. Please check server.";
+      toast.error(`Error: ${errorMessage}`, {
         position: "top-right",
         autoClose: 5000,
         hideProgressBar: false,
@@ -219,7 +219,7 @@ const OrganizerUpdateEvent = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl">Đang tải...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     );
   }
@@ -228,7 +228,7 @@ const OrganizerUpdateEvent = () => {
     return (
       <div className="p-6">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>Không tìm thấy thông tin sự kiện</p>
+          <p>Unable to find event information</p>
         </div>
       </div>
     );
@@ -253,7 +253,7 @@ const OrganizerUpdateEvent = () => {
       {/* Main content */}
       <div className="px-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Chỉnh sửa thông tin sự kiện
+          Edit Event Information
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -291,7 +291,7 @@ const OrganizerUpdateEvent = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tên sự kiện
+                Event Name
               </label>
               <input
                 type="text"
@@ -308,7 +308,7 @@ const OrganizerUpdateEvent = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Ngày
+                Date
               </label>
               <input
                 type="date"
@@ -325,7 +325,7 @@ const OrganizerUpdateEvent = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Giờ
+                Time
               </label>
               <input
                 type="time"
@@ -342,7 +342,7 @@ const OrganizerUpdateEvent = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Địa điểm
+                Location
               </label>
               <input
                 type="text"
@@ -359,7 +359,7 @@ const OrganizerUpdateEvent = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Hình ảnh
+                Image
               </label>
               <div className="mt-1 relative">
                 <input
@@ -375,7 +375,7 @@ const OrganizerUpdateEvent = () => {
                   className="flex items-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50"
                 >
                   <span className="text-gray-700 truncate">
-                    {imageFileName || "Chọn hình ảnh"}
+                    {imageFileName || "Select image"}
                   </span>
                 </label>
               </div>
@@ -399,7 +399,7 @@ const OrganizerUpdateEvent = () => {
                   className="flex items-center px-4 py-2 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50"
                 >
                   <span className="text-gray-700 truncate">
-                    {bannerFileName || "Chọn banner"}
+                    {bannerFileName || "Select banner"}
                   </span>
                 </label>
               </div>
@@ -408,7 +408,7 @@ const OrganizerUpdateEvent = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Mô tả
+              Description
             </label>
             <textarea
               name="description"
@@ -425,13 +425,13 @@ const OrganizerUpdateEvent = () => {
               onClick={() => navigate("/organizer/events")}
               className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="submit"
               className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              Lưu thay đổi
+              Save changes
             </button>
           </div>
         </form>

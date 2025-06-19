@@ -35,6 +35,8 @@ import Register from "./pages/Register";
 import CreateArea from "./components/features/event/admin/CreateArea";
 import OrganizerCreateArea from "./components/features/event/organizer/OrganizerCreateArea";
 import PrivateRoute from "./components/auth/PrivateRoute";
+import AdminDashboard from "./components/dashboard/AdminDashboard";
+import OrganizerDashboardStats from "./components/dashboard/OrganizerDashboard";
 
 const App = () => {
   return (
@@ -54,7 +56,7 @@ const App = () => {
             </PrivateRoute>
           }
         >
-          <Route index element={<div>Welcome to the Dashboard</div>} />
+          <Route index element={<AdminDashboard />} />
           <Route path="category" element={<Category />} />
           <Route path="event" element={<Event />} />
           <Route path="event/create" element={<CreateEvent />} />
@@ -83,6 +85,7 @@ const App = () => {
             </PrivateRoute>
           }
         >
+          <Route index element={<OrganizerDashboardStats />} />
           <Route path="events" element={<OrganizerEvent />} />
           <Route path="events/create" element={<OrganizerCreateEvent />} />
           <Route

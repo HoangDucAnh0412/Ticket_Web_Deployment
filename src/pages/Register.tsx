@@ -25,7 +25,9 @@ function Register() {
 
   const REGISTER_ENDPOINT = `${BASE_URL}/api/organizer/register`;
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -44,9 +46,12 @@ function Register() {
     if (!formData.fullName.trim()) newErrors.fullName = "Full name is required";
     if (!formData.phone.trim()) newErrors.phone = "Phone number is required";
     if (!formData.address.trim()) newErrors.address = "Address is required";
-    if (!formData.organizationName.trim()) newErrors.organizationName = "Organization name is required";
-    if (!formData.contactEmail.trim()) newErrors.contactEmail = "Contact email is required";
-    if (!formData.description.trim()) newErrors.description = "Description is required";
+    if (!formData.organizationName.trim())
+      newErrors.organizationName = "Organization name is required";
+    if (!formData.contactEmail.trim())
+      newErrors.contactEmail = "Contact email is required";
+    if (!formData.description.trim())
+      newErrors.description = "Description is required";
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (formData.email && !emailRegex.test(formData.email)) {
@@ -88,7 +93,7 @@ function Register() {
       console.error("Error:", error);
       toast.error(
         error.response?.data?.message ||
-        "Failed to create account. Please try again."
+          "Failed to create account. Please try again."
       );
     }
   };
@@ -288,7 +293,9 @@ function Register() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
               />
               {errors.organizationName && (
-                <p className="text-red-500 text-xs mt-1">{errors.organizationName}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.organizationName}
+                </p>
               )}
             </div>
 
@@ -311,7 +318,9 @@ function Register() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-3xl focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
               />
               {errors.contactEmail && (
-                <p className="text-red-500 text-xs mt-1">{errors.contactEmail}</p>
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.contactEmail}
+                </p>
               )}
             </div>
           </div>

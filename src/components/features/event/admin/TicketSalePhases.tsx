@@ -67,11 +67,11 @@ const TicketSalePhases = ({
 
   const formatDateTime = (dateTimeStr: string) => {
     const date = new Date(dateTimeStr);
-    const timePart = date.toLocaleString("vi-VN", {
+    const timePart = date.toLocaleString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
-    const datePart = date.toLocaleString("vi-VN", {
+    const datePart = date.toLocaleString("en-US", {
       day: "2-digit",
       month: "2-digit",
       year: "numeric",
@@ -122,7 +122,7 @@ const TicketSalePhases = ({
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
+        toast.error("You need to log in to perform this action");
         return;
       }
 
@@ -143,7 +143,7 @@ const TicketSalePhases = ({
         }
       );
 
-      toast.success("Cập nhật thành công!");
+      toast.success("Update successful!");
 
       // Update phases state locally to preserve order
       const updatedPhases = phases.map((phase) =>
@@ -157,28 +157,28 @@ const TicketSalePhases = ({
       if (currentIndex !== null) setOpenPhaseIndex(currentIndex); // Restore open state
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
     }
   };
 
   const handleDeletePhase = async (phaseId: number) => {
     const currentIndex = openPhaseIndex;
     const result = await Swal.fire({
-      title: "Bạn có chắc muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Are you sure you want to delete?",
+      text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "grey",
       cancelButtonColor: "red",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (result.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Bạn cần đăng nhập để thực hiện thao tác này");
+          toast.error("You need to log in to perform this action");
           return;
         }
 
@@ -188,7 +188,7 @@ const TicketSalePhases = ({
           },
         });
 
-        toast.success("Xóa phiên bán vé thành công!");
+        toast.success("Ticket sale phase deleted successfully!");
 
         // Update phases state locally to preserve order
         const updatedPhases = phases.filter(
@@ -204,7 +204,7 @@ const TicketSalePhases = ({
         setOpenNestedPhaseId(null);
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message;
-        toast.error(`Có lỗi xảy ra: ${msg}`);
+        toast.error(`An error occurred: ${msg}`);
       }
     }
   };
@@ -217,9 +217,7 @@ const TicketSalePhases = ({
     <div className="mt-2">
       <div className="flex flex-col md:flex-row gap-4">
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">
-            Tên khu vực
-          </label>
+          <label className="block text-gray-600 text-sm mb-1">Area Name</label>
           <input
             type="text"
             value={phase.areaName}
@@ -228,9 +226,7 @@ const TicketSalePhases = ({
           />
         </div>
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">
-            Thời gian bắt đầu
-          </label>
+          <label className="block text-gray-600 text-sm mb-1">Start Time</label>
           {editingPhase?.phaseId === phase.phaseId ? (
             <input
               type="datetime-local"
@@ -253,9 +249,7 @@ const TicketSalePhases = ({
           )}
         </div>
         <div className="flex-1">
-          <label className="block text-gray-600 text-sm mb-1">
-            Thời gian kết thúc
-          </label>
+          <label className="block text-gray-600 text-sm mb-1">End Time</label>
           {editingPhase?.phaseId === phase.phaseId ? (
             <input
               type="datetime-local"
@@ -279,7 +273,7 @@ const TicketSalePhases = ({
         </div>
         <div className="flex-1">
           <label className="block text-gray-600 text-sm mb-1">
-            Tổng số vé trong phiên
+            Total tickets in phase
           </label>
           {editingPhase?.phaseId === phase.phaseId ? (
             <input
@@ -311,14 +305,14 @@ const TicketSalePhases = ({
               className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
             >
               <FaSave />
-              Lưu
+              Save
             </button>
             <button
               onClick={handleCancelEdit}
               className="flex items-center gap-2 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600 transition-colors"
             >
               <FaTimes />
-              Hủy
+              Cancel
             </button>
           </>
         ) : (
@@ -328,14 +322,14 @@ const TicketSalePhases = ({
               className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
             >
               <FaEdit />
-              Cập nhật
+              Update
             </button>
             <button
               onClick={() => handleDeletePhase(phase.phaseId)}
               className="flex items-center gap-2 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
             >
               <FaTrash />
-              Xóa
+              Delete
             </button>
           </>
         )}
@@ -382,7 +376,9 @@ const TicketSalePhases = ({
                     </span>
                     <span className="text-gray-500 text-sm">
                       {groupPhases
-                        .map((p) => `${p.areaName} (${p.ticketsAvailable} Vé)`)
+                        .map(
+                          (p) => `${p.areaName} (${p.ticketsAvailable} tickets)`
+                        )
                         .join(", ")}
                     </span>
                   </div>

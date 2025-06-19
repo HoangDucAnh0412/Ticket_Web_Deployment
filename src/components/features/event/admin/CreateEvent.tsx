@@ -98,7 +98,7 @@ const CreateEvent: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo sự kiện.");
+      toast.error("You need to log in to create an event.");
       return;
     }
 
@@ -113,7 +113,7 @@ const CreateEvent: React.FC = () => {
         setCategories(catResp.data);
         setMapTemplates(mapResp.data);
       })
-      .catch((err) => toast.error(`Không thể tải dữ liệu: ${err.message}`));
+      .catch((err) => toast.error(`Unable to load data: ${err.message}`));
   }, []);
 
   useEffect(() => {
@@ -136,9 +136,7 @@ const CreateEvent: React.FC = () => {
         setTemplateAreas(resp.data.areas || []);
         setSelectedMapTemplate(resp.data);
       })
-      .catch((err) =>
-        toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
-      );
+      .catch((err) => toast.error(`Unable to load area list: ${err.message}`));
   }, [eventData.mapTemplateId]);
 
   // Draw map preview
@@ -315,7 +313,9 @@ const CreateEvent: React.FC = () => {
           selectedAreaId !== 0
       );
       if (isAreaSelected) {
-        toast.error("Khu vực này đã được chọn. Vui lòng chọn khu vực khác.");
+        toast.error(
+          "This area is already selected. Please select a different area."
+        );
         return;
       }
 
@@ -348,12 +348,12 @@ const CreateEvent: React.FC = () => {
         (ta) => ta.templateAreaId === eventData.areas[index].templateAreaId
       );
       if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
-        toast.error("Không thể thay đổi số lượng vé cho khu vực Stage.");
+        toast.error("Cannot change ticket quantity for Stage area.");
         return;
       }
       const tickets = parseFloat(value);
       if (tickets <= 0) {
-        toast.error("Tổng số vé phải lớn hơn 0.");
+        toast.error("Total tickets must be greater than 0.");
         return;
       }
     }
@@ -363,12 +363,12 @@ const CreateEvent: React.FC = () => {
         (ta) => ta.templateAreaId === eventData.areas[index].templateAreaId
       );
       if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
-        toast.error("Không thể thay đổi giá vé cho khu vực Stage.");
+        toast.error("Cannot change ticket price for Stage area.");
         return;
       }
       const price = parseFloat(value);
       if (price <= 0) {
-        toast.error("Giá vé phải lớn hơn 0.");
+        toast.error("Ticket price must be greater than 0.");
         return;
       }
     }
@@ -385,7 +385,7 @@ const CreateEvent: React.FC = () => {
   const handleAddArea = () => {
     if (eventData.areas.length >= templateAreas.length) {
       toast.error(
-        `Không thể thêm khu vực. Template chỉ hỗ trợ tối đa ${templateAreas.length} khu vực.`
+        `Unable to add area. Template only supports a maximum of ${templateAreas.length} areas.`
       );
       return;
     }
@@ -443,7 +443,7 @@ const CreateEvent: React.FC = () => {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo sự kiện.");
+      toast.error("You need to log in to create an event.");
       return;
     }
 
@@ -453,7 +453,7 @@ const CreateEvent: React.FC = () => {
       !eventData.time ||
       !eventData.location
     ) {
-      toast.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -477,13 +477,13 @@ const CreateEvent: React.FC = () => {
         );
       })
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Vui lòng kiểm tra lại.");
+      toast.error("Invalid area information. Please check again.");
       return;
     }
 
     if (eventData.areas.length > templateAreas.length) {
       toast.error(
-        `Số khu vực vượt quá giới hạn. Template chỉ hỗ trợ tối đa ${templateAreas.length} khu vực.`
+        `Exceeded the limit. Template only supports a maximum of ${templateAreas.length} areas.`
       );
       return;
     }
@@ -503,9 +503,7 @@ const CreateEvent: React.FC = () => {
         },
       });
 
-      toast.success(
-        `Sự kiện đã được tạo thành công với ID: ${resp.data.eventId}`
-      );
+      toast.success(`Event created successfully with ID: ${resp.data.eventId}`);
 
       setEventData(initialEventData);
       setImageFile(null);
@@ -527,9 +525,9 @@ const CreateEvent: React.FC = () => {
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
       toast.error(
-        msg.includes("template_area_id không hợp lệ")
-          ? "Khu vực template không tồn tại. Vui lòng chọn lại."
-          : `Có lỗi xảy ra: ${msg}`
+        msg.includes("template_area_id is invalid")
+          ? "Template area does not exist. Please select again."
+          : `An error occurred: ${msg}`
       );
     }
   };
@@ -581,14 +579,14 @@ const CreateEvent: React.FC = () => {
             <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
               1
             </div>
-            <span className="ml-2 text-gray-600">Tạo sự kiện</span>
+            <span className="ml-2 text-gray-600">Create Event</span>
           </div>
           <div className="w-40 h-0.5 bg-gray-300 mx-2"></div>
           <div className="flex items-center">
             <div className="bg-gray-300 text-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
               2
             </div>
-            <span className="ml-2 text-gray-400">Tạo phiên bán vé</span>
+            <span className="ml-2 text-gray-400">Create Ticket Sale Phase</span>
           </div>
         </div>
       </div>
@@ -596,14 +594,14 @@ const CreateEvent: React.FC = () => {
       {/* Main content */}
       <div className="px-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Tạo Sự Kiện Mới
+          Create New Event
         </h2>
 
         <form className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Danh mục
+                Category
               </label>
               <select
                 name="categoryId"
@@ -611,7 +609,7 @@ const CreateEvent: React.FC = () => {
                 onChange={handleInputChange}
                 className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
               >
-                <option value={0}>Chọn danh mục</option>
+                <option value={0}>Select category</option>
                 {categories.map((cat) => (
                   <option key={cat.categoryId} value={cat.categoryId}>
                     {cat.name}
@@ -621,7 +619,7 @@ const CreateEvent: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Tên sự kiện
+                Event Name
               </label>
               <input
                 type="text"
@@ -636,7 +634,7 @@ const CreateEvent: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Mô tả
+              Description
             </label>
             <textarea
               name="description"
@@ -650,7 +648,7 @@ const CreateEvent: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Ngày
+                Date
               </label>
               <input
                 type="date"
@@ -663,7 +661,7 @@ const CreateEvent: React.FC = () => {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700">
-                Thời gian
+                Time
               </label>
               <input
                 type="time"
@@ -678,7 +676,7 @@ const CreateEvent: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Địa điểm
+              Location
             </label>
             <input
               type="text"
@@ -692,7 +690,7 @@ const CreateEvent: React.FC = () => {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-4">
-              Template bản đồ
+              Map Template
             </label>
             <div className="space-y-6">
               {/* Template Selection */}
@@ -704,7 +702,7 @@ const CreateEvent: React.FC = () => {
                     onChange={handleInputChange}
                     className="block w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm"
                   >
-                    <option value={0}>Chọn template bản đồ</option>
+                    <option value={0}>Select map template</option>
                     {mapTemplates.map((t) => (
                       <option key={t.templateId} value={t.templateId}>
                         {t.name}
@@ -720,27 +718,27 @@ const CreateEvent: React.FC = () => {
                     </h4>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-600">Mô tả:</span>
+                        <span className="text-gray-600">Description:</span>
                         <p className="font-medium text-gray-800">
-                          {selectedMapTemplate.description || "Không có mô tả"}
+                          {selectedMapTemplate.description || "No description"}
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-600">Kích thước:</span>
+                        <span className="text-gray-600">Size:</span>
                         <p className="font-medium text-gray-800">
                           {selectedMapTemplate.mapWidth} ×{" "}
                           {selectedMapTemplate.mapHeight}px
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-600">Số khu vực:</span>
+                        <span className="text-gray-600">Area Count:</span>
                         <p className="font-medium text-gray-800">
-                          {selectedMapTemplate.areaCount} khu vực
+                          {selectedMapTemplate.areaCount} areas
                         </p>
                       </div>
                       <div>
-                        <span className="text-gray-600">Trạng thái:</span>
-                        <p className="font-medium text-green-600">✓ Sẵn sàng</p>
+                        <span className="text-gray-600">Status:</span>
+                        <p className="font-medium text-green-600">✓ Ready</p>
                       </div>
                     </div>
                   </div>
@@ -752,16 +750,16 @@ const CreateEvent: React.FC = () => {
                 <div className="w-full">
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
                     <h4 className="font-medium text-lg text-gray-800">
-                      🗺️ Preview Bản Đồ (Kích thước lớn)
+                      🗺️ Map Preview (Large Size)
                     </h4>
                     <div className="flex items-center space-x-4 text-sm">
                       <div className="flex items-center">
                         <div className="w-4 h-4 bg-gray-200 border border-gray-400 rounded mr-2"></div>
-                        <span className="text-gray-600">Chưa chọn</span>
+                        <span className="text-gray-600">Not selected</span>
                       </div>
                       <div className="flex items-center">
                         <div className="w-4 h-4 bg-yellow-400 border-2 border-yellow-600 rounded mr-2"></div>
-                        <span className="text-gray-600">Đã chọn</span>
+                        <span className="text-gray-600">Selected</span>
                       </div>
                     </div>
                   </div>
@@ -792,9 +790,7 @@ const CreateEvent: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Khu vực
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Areas</h3>
             {eventData.areas.map((area, idx) => {
               const selectedTemplateArea = templateAreas.find(
                 (ta) => ta.templateAreaId === area.templateAreaId
@@ -809,12 +805,12 @@ const CreateEvent: React.FC = () => {
                   <div className="grid md:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Tên khu vực
+                        Area Name
                       </label>
                       <input
                         type="text"
                         name="name"
-                        placeholder="Tên khu vực"
+                        placeholder="Area Name"
                         value={area.name}
                         onChange={(e) => handleInputChange(e, idx)}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
@@ -822,7 +818,7 @@ const CreateEvent: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Khu vực template
+                        Area Template
                       </label>
                       <select
                         name="templateAreaId"
@@ -830,7 +826,7 @@ const CreateEvent: React.FC = () => {
                         onChange={(e) => handleInputChange(e, idx)}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value={0}>Chọn khu vực</option>
+                        <option value={0}>Select area</option>
                         {templateAreas.map((ta) => (
                           <option
                             key={ta.templateAreaId}
@@ -843,12 +839,12 @@ const CreateEvent: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Tổng số vé
+                        Total Tickets
                       </label>
                       <input
                         type="number"
                         name="totalTickets"
-                        placeholder="Tổng số vé"
+                        placeholder="Total Tickets"
                         value={area.totalTickets}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
@@ -859,12 +855,12 @@ const CreateEvent: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Giá vé
+                        Ticket Price
                       </label>
                       <input
                         type="number"
                         name="price"
-                        placeholder="Giá vé"
+                        placeholder="Ticket Price"
                         value={area.price}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
@@ -880,7 +876,7 @@ const CreateEvent: React.FC = () => {
                       onClick={() => handleRemoveArea(idx)}
                       className="mt-2 text-red-600 hover:text-red-800"
                     >
-                      Xóa khu vực
+                      Remove Area
                     </button>
                   )}
                 </div>
@@ -891,7 +887,7 @@ const CreateEvent: React.FC = () => {
               onClick={handleAddArea}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              Thêm khu vực
+              Add Area
             </button>
           </div>
 
@@ -902,9 +898,7 @@ const CreateEvent: React.FC = () => {
             <div className="grid md:grid-cols-2 gap-6">
               {/* Image Upload */}
               <div className="space-y-3">
-                <h4 className="font-medium text-gray-800">
-                  🖼️ Hình Ảnh Sự Kiện
-                </h4>
+                <h4 className="font-medium text-gray-800">🖼️ Event Image</h4>
                 <div className="relative">
                   <input
                     id="image-input"
@@ -934,10 +928,10 @@ const CreateEvent: React.FC = () => {
                               }}
                               className="bg-white text-gray-800 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
                             >
-                              Xem full size
+                              View full size
                             </button>
                             <span className="text-white text-xs">
-                              Click để thay đổi
+                              Click to change
                             </span>
                           </div>
                         </div>
@@ -958,7 +952,7 @@ const CreateEvent: React.FC = () => {
                           />
                         </svg>
                         <span className="text-gray-600 text-sm">
-                          Chọn hình ảnh
+                          Select image
                         </span>
                       </div>
                     )}
@@ -1006,10 +1000,10 @@ const CreateEvent: React.FC = () => {
                                   }}
                                   className="bg-white text-gray-800 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
                                 >
-                                  Xem full size
+                                  View full size
                                 </button>
                                 <span className="text-white text-xs">
-                                  Click để thay đổi
+                                  Click to change
                                 </span>
                               </div>
                             </div>
@@ -1031,10 +1025,10 @@ const CreateEvent: React.FC = () => {
                                   }}
                                   className="bg-white text-gray-800 px-3 py-1 rounded text-xs font-medium hover:bg-gray-100"
                                 >
-                                  Xem full size
+                                  View full size
                                 </button>
                                 <span className="text-white text-xs">
-                                  Click để thay đổi
+                                  Click to change
                                 </span>
                               </div>
                             </div>
@@ -1057,7 +1051,7 @@ const CreateEvent: React.FC = () => {
                           />
                         </svg>
                         <span className="text-gray-600 text-sm">
-                          Chọn banner/video
+                          Select banner/video
                         </span>
                       </div>
                     )}
@@ -1078,14 +1072,14 @@ const CreateEvent: React.FC = () => {
               onClick={handleCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmit}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Tạo sự kiện
+              Create Event
             </button>
           </div>
         </form>

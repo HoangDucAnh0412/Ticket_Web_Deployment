@@ -37,7 +37,7 @@ const OrganizerCreateArea: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo khu vực.");
+      toast.error("You need to log in to create an area.");
       return;
     }
 
@@ -45,7 +45,7 @@ const OrganizerCreateArea: React.FC = () => {
     axios
       .get(ORGANIZER_MAP_TEMPLATES_ENDPOINT, { headers })
       .then((resp) => setMapTemplates(resp.data))
-      .catch((err) => toast.error(`Không thể tải dữ liệu: ${err.message}`));
+      .catch((err) => toast.error(`Unable to load data: ${err.message}`));
   }, []);
 
   useEffect(() => {
@@ -65,9 +65,7 @@ const OrganizerCreateArea: React.FC = () => {
         );
         setTemplateAreas(template?.areas || []);
       })
-      .catch((err) =>
-        toast.error(`Không thể tải danh sách khu vực: ${err.message}`)
-      );
+      .catch((err) => toast.error(`Unable to load area list: ${err.message}`));
   }, [selectedTemplateId]);
 
   const handleInputChange = (
@@ -90,7 +88,9 @@ const OrganizerCreateArea: React.FC = () => {
           selectedAreaId !== 0
       );
       if (isAreaSelected) {
-        toast.error("Khu vực này đã được chọn. Vui lòng chọn khu vực khác.");
+        toast.error(
+          "This area is already selected. Please select a different area."
+        );
         return;
       }
 
@@ -115,12 +115,12 @@ const OrganizerCreateArea: React.FC = () => {
         (ta) => ta.templateAreaId === areas[index].templateAreaId
       );
       if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
-        toast.error("Không thể thay đổi số lượng vé cho khu vực Stage.");
+        toast.error("Cannot change ticket quantity for Stage area.");
         return;
       }
       const tickets = parseFloat(value);
       if (tickets <= 0) {
-        toast.error("Tổng số vé phải lớn hơn 0.");
+        toast.error("Total tickets must be greater than 0.");
         return;
       }
     }
@@ -130,12 +130,12 @@ const OrganizerCreateArea: React.FC = () => {
         (ta) => ta.templateAreaId === areas[index].templateAreaId
       );
       if (selectedArea && selectedArea.name.toLowerCase().startsWith("stage")) {
-        toast.error("Không thể thay đổi giá vé cho khu vực Stage.");
+        toast.error("Cannot change ticket price for Stage area.");
         return;
       }
       const price = parseFloat(value);
       if (price <= 0) {
-        toast.error("Giá vé phải lớn hơn 0.");
+        toast.error("Ticket price must be greater than 0.");
         return;
       }
     }
@@ -151,7 +151,7 @@ const OrganizerCreateArea: React.FC = () => {
   const handleAddArea = () => {
     if (areas.length >= templateAreas.length) {
       toast.error(
-        `Không thể thêm khu vực. Template chỉ hỗ trợ tối đa ${templateAreas.length} khu vực.`
+        `Cannot add more areas. Template supports a maximum of ${templateAreas.length} areas.`
       );
       return;
     }
@@ -169,7 +169,7 @@ const OrganizerCreateArea: React.FC = () => {
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo khu vực.");
+      toast.error("You need to log in to create an area.");
       return;
     }
 
@@ -194,7 +194,7 @@ const OrganizerCreateArea: React.FC = () => {
         );
       })
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Vui lòng kiểm tra lại.");
+      toast.error("Invalid area information. Please check again.");
       return;
     }
 
@@ -210,11 +210,11 @@ const OrganizerCreateArea: React.FC = () => {
         });
       }
 
-      toast.success("Tạo khu vực thành công!");
+      toast.success("Area creation successful!");
       navigate(`/organizer/events/${eventId}`);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
     }
   };
 
@@ -241,20 +241,20 @@ const OrganizerCreateArea: React.FC = () => {
       {/* Main content */}
       <div className="px-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Tạo Khu Vực Mới
+          Create New Area
         </h2>
 
         <form className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Template bản đồ
+              Map Template
             </label>
             <select
               value={selectedTemplateId}
               onChange={(e) => setSelectedTemplateId(Number(e.target.value))}
               className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
             >
-              <option value={0}>Chọn template</option>
+              <option value={0}>Select template</option>
               {mapTemplates.map((t) => (
                 <option key={t.templateId} value={t.templateId}>
                   {t.name}
@@ -264,9 +264,7 @@ const OrganizerCreateArea: React.FC = () => {
           </div>
 
           <div>
-            <h3 className="text-lg font-semibold text-gray-800 mb-2">
-              Khu vực
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Area</h3>
             {areas.map((area, idx) => {
               const selectedTemplateArea = templateAreas.find(
                 (ta) => ta.templateAreaId === area.templateAreaId
@@ -283,12 +281,12 @@ const OrganizerCreateArea: React.FC = () => {
                   <div className="grid md:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Tên khu vực
+                        Area Name
                       </label>
                       <input
                         type="text"
                         name="name"
-                        placeholder="Tên khu vực"
+                        placeholder="Area Name"
                         value={area.name}
                         onChange={(e) => handleInputChange(e, idx)}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 placeholder-gray-500"
@@ -296,7 +294,7 @@ const OrganizerCreateArea: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Khu vực template
+                        Area Template
                       </label>
                       <select
                         name="templateAreaId"
@@ -304,7 +302,7 @@ const OrganizerCreateArea: React.FC = () => {
                         onChange={(e) => handleInputChange(e, idx)}
                         className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                       >
-                        <option value={0}>Chọn khu vực</option>
+                        <option value={0}>Select area</option>
                         {templateAreas.map((ta) => (
                           <option
                             key={ta.templateAreaId}
@@ -317,12 +315,12 @@ const OrganizerCreateArea: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Tổng số vé
+                        Total Tickets
                       </label>
                       <input
                         type="number"
                         name="totalTickets"
-                        placeholder="Tổng số vé"
+                        placeholder="Total Tickets"
                         value={area.totalTickets}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
@@ -333,12 +331,12 @@ const OrganizerCreateArea: React.FC = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
-                        Giá vé
+                        Ticket Price
                       </label>
                       <input
                         type="number"
                         name="price"
-                        placeholder="Giá vé"
+                        placeholder="Ticket Price"
                         value={area.price}
                         onChange={(e) => handleInputChange(e, idx)}
                         disabled={isStageArea}
@@ -353,7 +351,7 @@ const OrganizerCreateArea: React.FC = () => {
                     onClick={() => handleRemoveArea(idx)}
                     className="mt-2 text-red-600 hover:text-red-800"
                   >
-                    Xóa khu vực
+                    Remove Area
                   </button>
                 </div>
               );
@@ -363,7 +361,7 @@ const OrganizerCreateArea: React.FC = () => {
               onClick={handleAddArea}
               className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
             >
-              Thêm khu vực
+              Add Area
             </button>
           </div>
 
@@ -373,14 +371,14 @@ const OrganizerCreateArea: React.FC = () => {
               onClick={handleCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmit}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Tạo khu vực
+              Create Area
             </button>
           </div>
         </form>

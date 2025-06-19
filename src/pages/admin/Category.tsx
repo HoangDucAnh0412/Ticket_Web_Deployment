@@ -60,7 +60,7 @@ const Category = () => {
           <button
             onClick={handleSort}
             className="px-3 py-2 rounded bg-green-500 text-white"
-            title="Sắp xếp ID"
+            title="Sort by ID"
           >
             {sortAsc ? <FaSortAmountDown /> : <FaSortAmountUp />}
           </button>
@@ -119,7 +119,7 @@ const Category = () => {
           setShowModal(true);
         }}
         className="fixed bottom-6 right-6 bg-yellow-500 text-white p-4 rounded-full shadow-lg hover:bg-yellow-600"
-        title="Thêm danh mục"
+        title="Add category"
       >
         <FaPlus />
       </button>
@@ -129,7 +129,7 @@ const Category = () => {
         <div className="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center z-50">
           <div className="bg-white w-[600px] p-8 rounded-lg shadow-2xl">
             <h3 className="text-2xl font-bold mb-6 text-gray-800">
-              {isEditMode ? "Cập nhật danh mục" : "Thêm danh mục mới"}
+              {isEditMode ? "Update category" : "Add new category"}
             </h3>
 
             {errorMessage && (
@@ -140,11 +140,11 @@ const Category = () => {
 
             <div className="mb-5">
               <label className="block text-gray-700 font-medium mb-2">
-                Tên danh mục
+                Category name
               </label>
               <input
                 type="text"
-                placeholder="Nhập tên danh mục..."
+                placeholder="Enter category name..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full border border-gray-300 px-4 py-2 rounded"
@@ -153,10 +153,10 @@ const Category = () => {
 
             <div className="mb-6">
               <label className="block text-gray-700 font-medium mb-2">
-                Mô tả danh mục
+                Category description
               </label>
               <textarea
-                placeholder="Nhập mô tả danh mục..."
+                placeholder="Enter category description..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 className="w-full border border-gray-300 px-4 py-2 rounded"
@@ -173,13 +173,13 @@ const Category = () => {
                 }}
                 className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
               >
-                Hủy
+                Cancel
               </button>
               <button
                 onClick={isEditMode ? handleUpdateCategory : handleAddCategory}
                 className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
               >
-                {isEditMode ? "Cập nhật" : "Thêm"}
+                {isEditMode ? "Update" : "Add"}
               </button>
             </div>
           </div>

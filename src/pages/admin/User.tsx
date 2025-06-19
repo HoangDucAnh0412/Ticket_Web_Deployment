@@ -28,22 +28,26 @@ interface User {
   updatedAt: string;
 }
 
-const ADMIN_USERS_ENDPOINT = `${BASE_URL}/api/admin/users`;
+const ADMIN_USERS_ENDPOINT = (page: number, size: number) =>
+  `${BASE_URL}/api/admin/users?page=${page}&size=${size}`;
+const ADMIN_USERS_ALL_ENDPOINT = `${BASE_URL}/api/admin/users/all`;
 const ADMIN_USER_DELETE_ENDPOINT = (userId: number) =>
   `${BASE_URL}/api/admin/users/${userId}`;
 
 const User = () => {
-  const [users, setUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(0);
+  const [searchInput, setSearchInput] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [pageInput, setPageInput] = useState<string>(
     (currentPage + 1).toString()
   );
+  const [showPerformanceWarning, setShowPerformanceWarning] = useState(false);
 
   // Debounced search handler
   const debouncedSearch = useCallback(
@@ -54,58 +58,56 @@ const User = () => {
     []
   );
 
-  // Fetch users with search and sort parameters
+  // Fetch all users once on mount
   useEffect(() => {
-    const fetchUsers = async () => {
+    const fetchAllUsers = async () => {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("Vui lòng đăng nhập để xem danh sách user");
+          setError("Please log in to view the user list");
           return;
         }
-
-        // Create query parameters
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          size: pageSize.toString(),
-          search: searchTerm,
-          sortBy: "userId",
-          sortDirection: sortDirection,
-        });
-
-        const response = await axios.get(
-          `${ADMIN_USERS_ENDPOINT}?${params.toString()}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        // Try to fetch all users from a dedicated endpoint, fallback to paginated fetch if not available
+        let allFetchedUsers: User[] = [];
+        let response;
+        try {
+          response = await axios.get(ADMIN_USERS_ALL_ENDPOINT, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.data && response.data.data) {
+            allFetchedUsers = response.data.data;
           }
-        );
-
-        if (response.data && response.data.data) {
-          const paginatedData = response.data.data;
-          setUsers(paginatedData.content);
-          setTotalPages(paginatedData.totalPages);
-        } else {
-          setError("Không có dữ liệu user");
+        } catch {
+          // Fallback: fetch all pages
+          let page = 0;
+          let totalPagesFromApi = 0;
+          do {
+            response = await axios.get(ADMIN_USERS_ENDPOINT(page, 100), {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (response.data && response.data.data) {
+              const paginatedData = response.data.data;
+              allFetchedUsers = [...allFetchedUsers, ...paginatedData.content];
+              totalPagesFromApi = paginatedData.totalPages;
+            }
+            page++;
+          } while (page < totalPagesFromApi);
         }
+        setAllUsers(allFetchedUsers);
+        setShowPerformanceWarning(allFetchedUsers.length > 1000);
       } catch (error: any) {
-        if (error.response) {
-          setError(
-            `Lỗi: ${error.response.status} - ${error.response.data?.message || "Không thể tải danh sách user"
-            }`
-          );
-        } else {
-          setError("Không thể kết nối đến server");
-        }
+        setError(
+          `Error: ${error.response?.status} - ${
+            error.response?.data?.message || "Unable to load user list"
+          }`
+        );
       } finally {
         setLoading(false);
       }
     };
-
-    fetchUsers();
-  }, [currentPage, pageSize, searchTerm, sortDirection]);
+    fetchAllUsers();
+  }, []);
 
   const handleSort = () => {
     setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -114,21 +116,21 @@ const User = () => {
 
   const handleDeleteUser = async (userId: number) => {
     const confirm = await Swal.fire({
-      title: "Bạn có chắc muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Are you sure you want to delete?",
+      text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "grey",
       cancelButtonColor: "red",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (confirm.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Không tìm thấy token xác thực.");
+          toast.error("Authentication token not found.");
           return;
         }
 
@@ -138,11 +140,11 @@ const User = () => {
           },
         });
 
-        setUsers((prev) => prev.filter((user) => user.userId !== userId));
-        toast.success("Xóa người dùng thành công!");
+        setAllUsers((prev) => prev.filter((user) => user.userId !== userId));
+        toast.success("User deleted successfully!");
       } catch (error: any) {
-        console.error("Lỗi khi xóa người dùng:", error);
-        toast.error("Đã xảy ra lỗi khi xóa người dùng.");
+        console.error("Error deleting user:", error);
+        toast.error("An error occurred while deleting the user.");
       }
     }
   };
@@ -212,10 +214,40 @@ const User = () => {
     return <span className={classes}>{displayStatus}</span>;
   };
 
+  // Filter and Sort (applied locally)
+  const filteredAndSortedUsers = [...allUsers]
+    .filter(
+      (user) =>
+        user.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.phone.includes(searchTerm) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) =>
+      sortDirection === "asc" ? a.userId - b.userId : b.userId - a.userId
+    );
+
+  // Paginate the filtered and sorted data
+  const paginatedUsers = filteredAndSortedUsers.slice(
+    currentPage * pageSize,
+    (currentPage + 1) * pageSize
+  );
+
+  useEffect(() => {
+    setTotalPages(Math.ceil(filteredAndSortedUsers.length / pageSize));
+    if (
+      currentPage > 0 &&
+      currentPage >= Math.ceil(filteredAndSortedUsers.length / pageSize)
+    ) {
+      setCurrentPage(0);
+      setPageInput("1");
+    }
+  }, [filteredAndSortedUsers.length, pageSize]);
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl">Đang tải...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     );
   }
@@ -224,7 +256,7 @@ const User = () => {
     return (
       <div className="p-6">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p className="font-bold">Lỗi</p>
+          <p className="font-bold">Error</p>
           <p>{error}</p>
         </div>
       </div>
@@ -236,27 +268,32 @@ const User = () => {
       <ToastContainer />
       <div className="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
         <div>
-          <h3 className="text-xl font-semibold text-black">
-            Quản lý người dùng
-          </h3>
+          <h3 className="text-xl font-semibold text-black">User Management</h3>
           <h3 className="text-l text-gray-500 mt-2">
-            Danh sách người dùng trong hệ thống
+            List of users in the system
           </h3>
         </div>
         <div className="flex gap-3 flex-col sm:flex-row">
           <input
             type="text"
-            value={searchTerm}
-            onChange={(e) => debouncedSearch(e.target.value)}
-            placeholder="Tìm kiếm theo tên hoặc số điện thoại..."
+            value={searchInput}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              debouncedSearch(e.target.value);
+            }}
+            placeholder="Search by name, phone, email, or username..."
             className="px-4 py-2 border border-gray-300 rounded-md w-64"
           />
           <button
             onClick={handleSort}
             className="px-3 py-2 rounded bg-green-500 text-white"
-            title="Sắp xếp theo ID"
+            title="Sort by ID"
           >
-            {sortDirection === "asc" ? <FaSortAmountUp /> : <FaSortAmountDown />}
+            {sortDirection === "asc" ? (
+              <FaSortAmountUp />
+            ) : (
+              <FaSortAmountDown />
+            )}
           </button>
         </div>
       </div>
@@ -268,20 +305,20 @@ const User = () => {
               <tr>
                 <th className="px-6 py-3 border-b min-w-[80px]">ID</th>
                 <th className="px-6 py-3 border-b min-w-[150px]">Email</th>
-                <th className="px-6 py-3 border-b min-w-[150px]">Họ và tên</th>
+                <th className="px-6 py-3 border-b min-w-[150px]">Full Name</th>
                 <th className="px-6 py-3 border-b min-w-[120px]">
-                  Số điện thoại
+                  Phone Number
                 </th>
-                <th className="px-6 py-3 border-b min-w-[120px]">Vai trò</th>
-                <th className="px-6 py-3 border-b min-w-[120px]">Trạng thái</th>
+                <th className="px-6 py-3 border-b min-w-[120px]">Role</th>
+                <th className="px-6 py-3 border-b min-w-[120px]">Status</th>
                 <th className="px-6 py-3 border-b min-w-[150px] text-center">
-                  Thao tác
+                  Actions
                 </th>
               </tr>
             </thead>
             <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
                   <tr key={user.userId} className="hover:bg-gray-50">
                     <td className="px-6 py-4 border-b">{user.userId}</td>
                     <td className="px-6 py-4 border-b">{user.email}</td>
@@ -298,21 +335,21 @@ const User = () => {
                         <Link
                           to={`/dashboard/user/edit/${user.userId}`}
                           className="bg-sky-500 text-white px-3 py-2 rounded hover:bg-sky-600"
-                          title="Chỉnh sửa"
+                          title="Edit"
                         >
                           <FaEdit />
                         </Link>
                         <button
                           onClick={() => handleDeleteUser(user.userId)}
                           className="bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600"
-                          title="Xóa"
+                          title="Delete"
                         >
                           <FaTrash />
                         </button>
                         <Link
                           to={`/dashboard/user/${user.userId}`}
                           className="bg-purple-500 text-white px-3 py-2 rounded hover:bg-purple-600"
-                          title="Chi tiết"
+                          title="Details"
                         >
                           <FaInfoCircle />
                         </Link>
@@ -326,7 +363,7 @@ const User = () => {
                     colSpan={7}
                     className="px-6 py-4 text-center text-gray-500"
                   >
-                    Không có người dùng nào.
+                    No users found.
                   </td>
                 </tr>
               )}
@@ -387,8 +424,9 @@ const User = () => {
                 <button
                   key={i}
                   onClick={() => handlePageChange(i)}
-                  className={`px-4 py-2 rounded ${currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
-                    }`}
+                  className={`px-4 py-2 rounded ${
+                    currentPage === i ? "bg-blue-500 text-white" : "bg-gray-300"
+                  }`}
                 >
                   {i + 1}
                 </button>
@@ -442,10 +480,17 @@ const User = () => {
       <Link
         to="/dashboard/user/create"
         className="fixed bottom-6 right-6 bg-yellow-500 text-white p-4 rounded-full shadow-lg hover:bg-yellow-600 transition-transform hover:scale-110"
-        title="Thêm người dùng"
+        title="Add user"
       >
         <FaPlus />
       </Link>
+
+      {showPerformanceWarning && (
+        <div className="bg-yellow-100 border border-yellow-300 text-yellow-800 px-4 py-2 rounded mb-4">
+          Warning: There are a large number of users. Search and sort
+          performance may be slow.
+        </div>
+      )}
     </div>
   );
 };

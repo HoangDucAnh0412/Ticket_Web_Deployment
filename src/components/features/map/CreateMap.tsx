@@ -89,13 +89,10 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
     setMapTemplate({ ...mapTemplate, [name]: parsedValue });
   };
 
-
-
-
   const handleAddArea = () => {
     if (mapTemplate.areas.length >= mapTemplate.areaCount) {
       toast.error(
-        `Không thể thêm khu vực. Template chỉ hỗ trợ tối đa ${mapTemplate.areaCount} khu vực.`
+        `Cannot add area. Template only supports up to ${mapTemplate.areaCount} areas.`
       );
       return;
     }
@@ -128,7 +125,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo template map.");
+      toast.error("You need to log in to create a map template.");
       return;
     }
 
@@ -139,12 +136,12 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
       mapTemplate.mapWidth <= 0 ||
       mapTemplate.mapHeight <= 0
     ) {
-      toast.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
     if (mapTemplate.areas.length !== mapTemplate.areaCount) {
-      toast.error("Số lượng khu vực không khớp với areaCount.");
+      toast.error("The number of areas does not match areaCount.");
       return;
     }
 
@@ -157,7 +154,9 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
           (area.height !== null && area.height < 0)
       )
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm.");
+      toast.error(
+        "Invalid area information. Negative numbers are not allowed."
+      );
       return;
     }
 
@@ -166,7 +165,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
       (name, index) => areaNames.indexOf(name) !== index
     );
     if (hasDuplicateNames) {
-      toast.error("Tên khu vực không được trùng lặp.");
+      toast.error("Area names must be unique.");
       return;
     }
 
@@ -205,7 +204,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
       );
 
       toast.success(
-        `Template map đã được tạo thành công với ID: ${response.data.templateId}`
+        `Map template created successfully with ID: ${response.data.templateId}`
       );
       setMapTemplate(initialMapTemplateData);
       setTimeout(() => {
@@ -213,7 +212,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
       }, 2000); // Đợi 2 giây để hiển thị toast
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
       setTimeout(() => {
         onMapCreated(false); // Truyền false nếu tạo thất bại
       }, 2000);
@@ -228,14 +227,14 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Tạo Template Map Mới
+        Create New Map Template
       </h2>
 
       <form className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Tên template
+              Template Name
             </label>
             <input
               type="text"
@@ -248,7 +247,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Số lượng khu vực
+              Area Count
             </label>
             <input
               type="number"
@@ -264,7 +263,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Mô tả
+            Description
           </label>
           <textarea
             name="description"
@@ -278,7 +277,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều rộng map (px)
+              Map Width (px)
             </label>
             <input
               type="number"
@@ -292,7 +291,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều cao map (px)
+              Map Height (px)
             </label>
             <input
               type="number"
@@ -307,7 +306,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Khu vực</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Areas</h3>
           {mapTemplate.areas.map((area, idx) => (
             <div
               key={idx}
@@ -316,7 +315,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
               <div className="grid md:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tên khu vực
+                    Area Name
                   </label>
                   <input
                     type="text"
@@ -341,7 +340,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tọa độ X
+                    X Coordinate
                   </label>
                   <input
                     type="number"
@@ -355,7 +354,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tọa độ Y
+                    Y Coordinate
                   </label>
                   <input
                     type="number"
@@ -369,7 +368,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Chiều rộng
+                    Width
                   </label>
                   <input
                     type="number"
@@ -383,7 +382,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Chiều cao
+                    Height
                   </label>
                   <input
                     type="number"
@@ -397,7 +396,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700">
-                    Màu khu vực
+                    Area Color
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -435,7 +434,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Khu vực là STAGE
+                    Is STAGE Area
                   </label>
                   <input
                     type="checkbox"
@@ -448,7 +447,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
               </div>
               <div className="mt-2 ">
                 <label className="block text-sm font-medium text-gray-700">
-                  Vertices (dán JSON array)
+                  Vertices (paste JSON array)
                 </label>
                 <textarea
                   value={JSON.stringify(area.vertices || [], null, 2)}
@@ -468,11 +467,11 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                         setMapTemplate({ ...mapTemplate, areas: updatedAreas });
                       } else {
                         toast.error(
-                          "Dữ liệu vertices phải là mảng các object có x, y dạng số."
+                          "Vertices data must be an array of objects with x, y as numbers."
                         );
                       }
                     } catch {
-                      toast.error("tạo khu vv.");
+                      toast.error("Invalid vertices data.");
                     }
                   }}
                   rows={4}
@@ -488,7 +487,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
                 onClick={() => handleRemoveArea(idx)}
                 className="mt-2 text-red-600 hover:text-red-800"
               >
-                Xóa khu vực
+                Delete Area
               </button>
             </div>
           ))}
@@ -497,7 +496,7 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
             onClick={handleAddArea}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
-            Thêm khu vực
+            Add Area
           </button>
         </div>
 
@@ -507,14 +506,14 @@ const CreateMapTemplate: React.FC<CreateMapTemplateProps> = ({
             onClick={handleCancel}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
           >
-            Hủy
+            Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Tạo template
+            Create Template
           </button>
         </div>
       </form>

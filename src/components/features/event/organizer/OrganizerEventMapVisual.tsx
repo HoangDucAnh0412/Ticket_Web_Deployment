@@ -150,7 +150,7 @@ const MapVisual: React.FC<MapVisualProps> = ({ eventId, mapTemplateId }) => {
         >
           <div className="flex items-center gap-2">
             <h3 className="font-semibold text-base">{mapTemplate.name}</h3>
-            <span className="text-sm text-gray-500">({areaCount} khu vực)</span>
+            <span className="text-sm text-gray-500">({areaCount} area)</span>
           </div>
           <div className="flex items-center gap-2">
             {isOpen ? <FaChevronUp /> : <FaChevronDown />}

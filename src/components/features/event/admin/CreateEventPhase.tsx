@@ -49,7 +49,7 @@ const CreateEventPhase: React.FC = () => {
         setAreas(response.data.data);
       } catch (err: any) {
         const msg = err.response?.data?.message || err.message;
-        toast.error(`Lỗi khi tải danh sách khu vực: ${msg}`);
+        toast.error(`Error loading area list: ${msg}`);
       }
     };
 
@@ -88,7 +88,7 @@ const CreateEventPhase: React.FC = () => {
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Bạn cần đăng nhập để tạo phiên bán vé.");
+      toast.error("You need to log in to create a ticket sale phase.");
       return;
     }
 
@@ -98,7 +98,7 @@ const CreateEventPhase: React.FC = () => {
           !p.startTime || !p.endTime || p.ticketsAvailable <= 0 || p.areaId <= 0
       )
     ) {
-      toast.error("Vui lòng điền đầy đủ thông tin cho tất cả các phiên.");
+      toast.error("Please fill in all information for all phases.");
       return;
     }
 
@@ -112,13 +112,13 @@ const CreateEventPhase: React.FC = () => {
         });
       }
 
-      toast.success("Tạo phiên bán vé thành công!");
+      toast.success("Ticket sale phase created successfully!");
       setTimeout(() => {
         navigate("/dashboard/event");
       }, 3000);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
     }
   };
 
@@ -156,14 +156,14 @@ const CreateEventPhase: React.FC = () => {
             <div className="bg-green-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
               1
             </div>
-            <span className="ml-2 text-gray-600">Tạo sự kiện</span>
+            <span className="ml-2 text-gray-600">Create Event</span>
           </div>
           <div className="flex-1 h-0.5 bg-gray-300"></div>
           <div className="flex items-center">
             <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center">
               2
             </div>
-            <span className="ml-2 text-gray-600">Tạo phiên bán vé</span>
+            <span className="ml-2 text-gray-600">Create Ticket Sale Phase</span>
           </div>
         </div>
       </div>
@@ -171,7 +171,7 @@ const CreateEventPhase: React.FC = () => {
       {/* Main content */}
       <div className="px-6">
         <h2 className="text-2xl font-bold mb-6 text-gray-800">
-          Tạo Phiên Bán Vé
+          Create Ticket Sale Phase
         </h2>
 
         <form className="space-y-6">
@@ -183,7 +183,7 @@ const CreateEventPhase: React.FC = () => {
               <div className="grid md:grid-cols-4 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Khu vực
+                    Area
                   </label>
                   <select
                     name="areaId"
@@ -191,17 +191,17 @@ const CreateEventPhase: React.FC = () => {
                     onChange={(e) => handleInputChange(e, idx)}
                     className="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   >
-                    <option value="">Chọn khu vực</option>
+                    <option value="">Select area</option>
                     {areas.map((area) => (
                       <option key={area.areaId} value={area.areaId}>
-                        {area.name} - {area.price.toLocaleString("vi-VN")} VNĐ
+                        {area.name} - {area.price.toLocaleString("en-US")} VND
                       </option>
                     ))}
                   </select>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Thời gian bắt đầu
+                    Start Time
                   </label>
                   <input
                     type="datetime-local"
@@ -213,7 +213,7 @@ const CreateEventPhase: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Thời gian kết thúc
+                    End Time
                   </label>
                   <input
                     type="datetime-local"
@@ -225,7 +225,7 @@ const CreateEventPhase: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Số lượng vé
+                    Ticket Quantity
                   </label>
                   <input
                     type="number"
@@ -241,7 +241,7 @@ const CreateEventPhase: React.FC = () => {
                 onClick={() => handleRemovePhase(idx)}
                 className="mt-2 text-red-600 hover:text-red-800"
               >
-                Xóa phiên
+                Delete Phase
               </button>
             </div>
           ))}
@@ -251,7 +251,7 @@ const CreateEventPhase: React.FC = () => {
             onClick={handleAddPhase}
             className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600"
           >
-            Thêm phiên
+            Add Phase
           </button>
 
           <div className="flex justify-end space-x-3">
@@ -260,14 +260,14 @@ const CreateEventPhase: React.FC = () => {
               onClick={handleCancel}
               className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
             >
-              Hủy
+              Cancel
             </button>
             <button
               type="button"
               onClick={handleSubmit}
               className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
             >
-              Tạo phiên bán vé
+              Create Ticket Sale Phase
             </button>
           </div>
         </form>

@@ -64,7 +64,7 @@ const UserDetail = () => {
         setLoading(true);
         const token = localStorage.getItem("token");
         if (!token) {
-          setError("Vui lòng đăng nhập để xem thông tin người dùng");
+          setError("Please log in to view user information");
           return;
         }
 
@@ -80,18 +80,19 @@ const UserDetail = () => {
         if (response.data && response.data.data) {
           setUserHistory(response.data.data);
         } else {
-          setError("Không có dữ liệu lịch sử giao dịch");
+          setError("No transaction history data available");
         }
       } catch (error: any) {
         console.error("Error fetching user history:", error);
         if (error.response) {
           setError(
-            `Lỗi: ${error.response.status} - ${
-              error.response.data?.message || "Không thể tải lịch sử giao dịch"
+            `Error: ${error.response.status} - ${
+              error.response.data?.message ||
+              "Unable to load transaction history"
             }`
           );
         } else {
-          setError("Không thể kết nối đến server");
+          setError("Unable to connect to the server");
         }
       } finally {
         setLoading(false);
@@ -138,19 +139,19 @@ const UserDetail = () => {
     switch (status.toLowerCase()) {
       case "completed":
         classes += " text-green-700 bg-green-100 border border-green-300";
-        displayStatus = "Hoàn thành";
+        displayStatus = "Completed";
         break;
       case "pending":
         classes += " text-yellow-700 bg-yellow-100 border border-yellow-300";
-        displayStatus = "Đang xử lý";
+        displayStatus = "Pending";
         break;
       case "failed":
         classes += " text-red-700 bg-red-100 border border-red-300";
-        displayStatus = "Thất bại";
+        displayStatus = "Failed";
         break;
       case "sold":
         classes += " text-blue-700 bg-blue-100 border border-blue-300";
-        displayStatus = "Đã bán";
+        displayStatus = "Sold";
         break;
       default:
         classes += " text-gray-700 bg-gray-100 border border-gray-300";
@@ -167,7 +168,7 @@ const UserDetail = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="text-xl">Đang tải...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     );
   }
@@ -176,7 +177,7 @@ const UserDetail = () => {
     return (
       <div className="p-6">
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p className="font-bold">Lỗi</p>
+          <p className="font-bold">Error</p>
           <p>{error}</p>
         </div>
         <Link
@@ -184,7 +185,7 @@ const UserDetail = () => {
           className="mt-4 inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
         >
           <FaArrowLeft className="mr-2" />
-          Quay lại danh sách
+          Back to list
         </Link>
       </div>
     );
@@ -194,7 +195,7 @@ const UserDetail = () => {
     return (
       <div className="p-6">
         <div className="text-center text-gray-500">
-          Không tìm thấy thông tin người dùng
+          User information not found
         </div>
       </div>
     );
@@ -214,10 +215,8 @@ const UserDetail = () => {
             <FaArrowLeft size={20} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">
-              Chi tiết người dùng
-            </h1>
-            <p className="text-gray-600">Lịch sử giao dịch và vé</p>
+            <h1 className="text-2xl font-bold text-gray-800">User Details</h1>
+            <p className="text-gray-600">Transaction and ticket history</p>
           </div>
         </div>
       </div>
@@ -227,7 +226,7 @@ const UserDetail = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center">
             <FaUser className="mr-2 text-blue-500" />
-            Thông tin người dùng
+            User Information
           </h2>
         </div>
         <div className="px-6 py-4">
@@ -242,7 +241,7 @@ const UserDetail = () => {
             <div className="flex items-center">
               <FaUser className="mr-3 text-gray-400" />
               <div>
-                <p className="text-sm text-gray-500">Tên đăng nhập</p>
+                <p className="text-sm text-gray-500">Username</p>
                 <p className="font-medium">{userHistory.username}</p>
               </div>
             </div>
@@ -256,7 +255,7 @@ const UserDetail = () => {
             <div className="flex items-center">
               <FaUser className="mr-3 text-gray-400" />
               <div>
-                <p className="text-sm text-gray-500">Họ và tên</p>
+                <p className="text-sm text-gray-500">Full Name</p>
                 <p className="font-medium">{userHistory.fullName}</p>
               </div>
             </div>
@@ -269,14 +268,14 @@ const UserDetail = () => {
         <div className="px-6 py-4 border-b border-gray-200">
           <h2 className="text-lg font-semibold text-gray-800 flex items-center">
             <FaHistory className="mr-2 text-green-500" />
-            Lịch sử giao dịch ({userHistory.transactions.length})
+            Transaction History ({userHistory.transactions.length})
           </h2>
         </div>
 
         {userHistory.transactions.length === 0 ? (
           <div className="px-6 py-8 text-center text-gray-500">
             <FaHistory className="mx-auto mb-4 text-4xl text-gray-300" />
-            <p>Người dùng chưa có giao dịch nào</p>
+            <p>This user has no transactions</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
@@ -295,7 +294,7 @@ const UserDetail = () => {
                     </div>
                     <div>
                       <p className="font-medium text-gray-900">
-                        Giao dịch #{transaction.transactionId.slice(0, 8)}...
+                        Transaction #{transaction.transactionId.slice(0, 8)}...
                       </p>
                       <p className="text-sm text-gray-500 flex items-center">
                         <FaCalendarAlt className="mr-1" />
@@ -326,12 +325,12 @@ const UserDetail = () => {
                   <div className="mt-4 pl-12">
                     <h4 className="font-medium text-gray-800 mb-3 flex items-center">
                       <FaTicketAlt className="mr-2 text-purple-500" />
-                      Vé đã mua ({transaction.tickets.length})
+                      Purchased Tickets ({transaction.tickets.length})
                     </h4>
 
                     {transaction.tickets.length === 0 ? (
                       <p className="text-gray-500 italic">
-                        Không có vé nào trong giao dịch này
+                        No tickets in this transaction
                       </p>
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -346,7 +345,7 @@ const UserDetail = () => {
                                   {ticket.eventName}
                                 </h5>
                                 <p className="text-sm text-gray-600 mb-2">
-                                  Khu vực:{" "}
+                                  Area:{" "}
                                   <span className="font-medium">
                                     {ticket.areaName}
                                   </span>
@@ -363,7 +362,7 @@ const UserDetail = () => {
                             <div className="text-sm text-gray-500 mb-3">
                               <p className="flex items-center">
                                 <FaCalendarAlt className="mr-1" />
-                                Mua: {formatDateTime(ticket.purchaseDate)}
+                                Purchased: {formatDateTime(ticket.purchaseDate)}
                               </p>
                             </div>
 
@@ -374,7 +373,7 @@ const UserDetail = () => {
                               className="w-full flex items-center justify-center px-3 py-2 bg-blue-500 text-white text-sm rounded hover:bg-blue-600 transition-colors"
                             >
                               <FaQrcode className="mr-2" />
-                              Xem mã QR
+                              View QR Code
                             </button>
                           </div>
                         ))}

@@ -1,10 +1,11 @@
 import { useLocation } from "react-router-dom";
-import { FaUser, FaThList, FaTicketAlt, FaExchangeAlt, FaQrcode } from "react-icons/fa";
+import { FaUser, FaThList, FaTicketAlt, FaExchangeAlt, FaQrcode, FaTachometerAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
 function OrganizerSideBar() {
   const location = useLocation();
   const menuItems = [
+    { to: "/organizer", icon: <FaTachometerAlt />, label: "Dashboard" },
     { to: "/organizer/events", icon: <FaThList />, label: "Event" },
     { to: "/organizer/transactions", icon: <FaExchangeAlt />, label: "Transactions" },
     { to: "/organizer/tickets", icon: <FaQrcode />, label: "Tickets" },
@@ -18,9 +19,9 @@ function OrganizerSideBar() {
         </div>
         <div className="flex flex-col items-start">
           <div className="inline-flex items-center bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent">
-          <span className="font-bold text-black text-lg">Tick</span>
-          <span className="font-bold text-green-500 text-lg">vi</span>
-          <span className="font-bold text-black text-lg">vo</span>
+            <span className="font-bold text-black text-lg">Tick</span>
+            <span className="font-bold text-green-500 text-lg">vi</span>
+            <span className="font-bold text-black text-lg">vo</span>
           </div>
           <span className="text-gray-500 text-sm">Organizer</span>
         </div>
@@ -35,9 +36,9 @@ function OrganizerSideBar() {
               <Link
                 to={item.to}
                 className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === item.to
-                    ? "bg-green-100 text-green-500 font-medium"
-                    : "hover:bg-green-100 hover:text-green-500"
-                }`}
+                  ? "bg-green-100 text-green-500 font-medium"
+                  : "hover:bg-green-100 hover:text-green-500"
+                  }`}
               >
                 <span className="mr-3 text-lg">{item.icon}</span>
                 {item.label}
@@ -53,9 +54,9 @@ function OrganizerSideBar() {
             <Link
               to="/organizer/profile"
               className={`flex items-center px-3 py-2 rounded-lg transition-all duration-200 ${location.pathname === "/organizer/profile"
-                  ? "bg-green-100 text-green-500 font-medium"
-                  : "hover:bg-green-100 hover:text-green-500"
-              }`}
+                ? "bg-green-100 text-green-500 font-medium"
+                : "hover:bg-green-100 hover:text-green-500"
+                }`}
             >
               <span className="mr-3 text-lg">
                 <FaUser />

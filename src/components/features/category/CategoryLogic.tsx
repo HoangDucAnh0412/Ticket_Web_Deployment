@@ -37,7 +37,7 @@ export const useCategoryLogic = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực.");
+        toast.error("No authentication token found.");
         return;
       }
 
@@ -51,8 +51,8 @@ export const useCategoryLogic = () => {
       setCategories(response.data);
       setFilteredCategories(response.data);
     } catch (error: any) {
-      console.error("Lỗi khi lấy danh sách danh mục:", error);
-      toast.error("Đã xảy ra lỗi khi lấy danh sách danh mục.");
+      console.error("Error fetching category list:", error);
+      toast.error("An error occurred while fetching category list.");
     }
   };
 
@@ -89,7 +89,7 @@ export const useCategoryLogic = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực.");
+        toast.error("No authentication token found.");
         return;
       }
 
@@ -109,9 +109,9 @@ export const useCategoryLogic = () => {
       setFilteredCategories(updated);
       setShowModal(false);
       resetForm();
-      toast.success("Thêm danh mục thành công!");
+      toast.success("Category added successfully!");
     } catch (error: any) {
-      handleError(error, "thêm");
+      handleError(error, "add");
     }
   };
 
@@ -131,7 +131,7 @@ export const useCategoryLogic = () => {
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        toast.error("Không tìm thấy token xác thực.");
+        toast.error("No authentication token found.");
         return;
       }
 
@@ -153,30 +153,30 @@ export const useCategoryLogic = () => {
       setFilteredCategories(updated);
       setShowModal(false);
       resetForm();
-      toast.success("Cập nhật danh mục thành công!");
+      toast.success("Category updated successfully!");
     } catch (error: any) {
-      handleError(error, "cập nhật");
+      handleError(error, "update");
     }
   };
 
   // Delete category
   const handleDeleteCategory = async (categoryId: number) => {
     const confirm = await Swal.fire({
-      title: "Bạn có chắc muốn xóa?",
-      text: "Hành động này không thể hoàn tác!",
+      title: "Are you sure you want to delete?",
+      text: "This action cannot be undone!",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "grey",
       cancelButtonColor: "red",
-      confirmButtonText: "Xóa",
-      cancelButtonText: "Hủy",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
     });
 
     if (confirm.isConfirmed) {
       try {
         const token = localStorage.getItem("token");
         if (!token) {
-          toast.error("Không tìm thấy token xác thực.");
+          toast.error("No authentication token found.");
           return;
         }
 
@@ -192,10 +192,10 @@ export const useCategoryLogic = () => {
         );
         setCategories(updated);
         setFilteredCategories(updated);
-        toast.success("Xóa danh mục thành công!");
+        toast.success("Category deleted successfully!");
       } catch (error: any) {
-        console.error("Lỗi khi xóa danh mục:", error);
-        toast.error("Đã xảy ra lỗi khi xóa danh mục.");
+        console.error("An error occurred while deleting category:", error);
+        toast.error("An error occurred while deleting category.");
       }
     }
   };
@@ -214,8 +214,8 @@ export const useCategoryLogic = () => {
       setErrorMessage(error.response.data.message);
       toast.error(error.response.data.message);
     } else {
-      setErrorMessage(`Đã xảy ra lỗi khi ${action} danh mục.`);
-      toast.error(`Đã xảy ra lỗi khi ${action} danh mục.`);
+      setErrorMessage(`An error occurred while ${action} category.`);
+      toast.error(`An error occurred while ${action} category.`);
     }
   };
 

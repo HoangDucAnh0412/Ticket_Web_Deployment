@@ -87,7 +87,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
 
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Không tìm thấy token xác thực.");
+      toast.error("No authentication token found.");
       return;
     }
 
@@ -97,7 +97,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       updatedTemplate.mapWidth <= 0 ||
       updatedTemplate.mapHeight <= 0
     ) {
-      toast.error("Vui lòng điền đầy đủ các trường bắt buộc.");
+      toast.error("Please fill in all required fields.");
       return;
     }
 
@@ -110,7 +110,9 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
           (area.height !== null && area.height < 0)
       )
     ) {
-      toast.error("Thông tin khu vực không hợp lệ. Không được nhập số âm.");
+      toast.error(
+        "Invalid area information. Negative numbers are not allowed."
+      );
       return;
     }
 
@@ -119,7 +121,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
       (name, index) => areaNames.indexOf(name) !== index && name !== ""
     );
     if (hasDuplicateNames) {
-      toast.error("Tên khu vực không được trùng lặp.");
+      toast.error("Area names must be unique.");
       return;
     }
 
@@ -189,11 +191,11 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
         ...areaUpdatePromises,
       ]);
 
-      toast.success("Cập nhật template map và các khu vực thành công!");
+      toast.success("Map template and areas updated successfully!");
       onUpdate(true);
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra: ${msg}`);
+      toast.error(`An error occurred: ${msg}`);
       onUpdate(false);
     }
   };
@@ -201,7 +203,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
   const handleDeleteArea = async (areaId: number) => {
     const token = localStorage.getItem("token");
     if (!token) {
-      toast.error("Không tìm thấy token xác thực.");
+      toast.error("No authentication token found.");
       return;
     }
 
@@ -224,10 +226,10 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
         areaCount: updatedTemplate.areaCount - 1,
       });
 
-      toast.success("Xóa khu vực thành công!");
+      toast.success("Area deleted successfully!");
     } catch (err: any) {
       const msg = err.response?.data?.message || err.message;
-      toast.error(`Có lỗi xảy ra khi xóa khu vực: ${msg}`);
+      toast.error(`An error occurred while deleting area: ${msg}`);
     }
   };
 
@@ -238,7 +240,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
       <h2 className="text-2xl font-bold mb-6 text-gray-800">
-        Cập nhật Template Map
+        Update Map Template
       </h2>
 
       <form className="space-y-6">
@@ -257,7 +259,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Tên template
+              Template Name
             </label>
             <input
               type="text"
@@ -272,7 +274,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
 
         <div>
           <label className="block text-sm font-medium text-gray-700">
-            Mô tả
+            Description
           </label>
           <textarea
             name="description"
@@ -286,7 +288,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Số lượng khu vực
+              Area Count
             </label>
             <input
               type="number"
@@ -298,7 +300,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều rộng map (px)
+              Map Width (px)
             </label>
             <input
               type="number"
@@ -312,7 +314,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Chiều cao map (px)
+              Map Height (px)
             </label>
             <input
               type="number"
@@ -327,7 +329,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
         </div>
 
         <div>
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Khu vực</h3>
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Areas</h3>
           {updatedTemplate.areas.map((area, idx) => (
             <div
               key={area.templateAreaId}
@@ -356,7 +358,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
               <div className="grid md:grid-cols-5 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    ID Khu vực
+                    Area ID
                   </label>
                   <input
                     type="number"
@@ -368,7 +370,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tên khu vực
+                    Area Name
                   </label>
                   <input
                     type="text"
@@ -393,7 +395,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tọa độ X
+                    X Coordinate
                   </label>
                   <input
                     type="number"
@@ -407,7 +409,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Tọa độ Y
+                    Y Coordinate
                   </label>
                   <input
                     type="number"
@@ -421,7 +423,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Chiều rộng
+                    Width
                   </label>
                   <input
                     type="number"
@@ -435,7 +437,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Chiều cao
+                    Height
                   </label>
                   <input
                     type="number"
@@ -449,7 +451,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1 text-gray-700">
-                    Màu khu vực
+                    Area Color
                   </label>
                   <div className="flex items-center gap-2">
                     <input
@@ -487,7 +489,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Khu vực là STAGE
+                    Is STAGE Area
                   </label>
                   <input
                     type="checkbox"
@@ -500,7 +502,7 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
               </div>
               <div className="mt-2">
                 <label className="block text-sm font-medium text-gray-700">
-                  Vertices (dán JSON array)
+                  Vertices (paste JSON array)
                 </label>
                 <textarea
                   value={JSON.stringify(area.vertices || [], null, 2)}
@@ -523,12 +525,12 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
                         });
                       } else {
                         toast.error(
-                          "Dữ liệu vertices phải là mảng các object có x, y dạng số."
+                          "Vertices data must be an array of objects with x, y as numbers."
                         );
                       }
                     } catch {
                       toast.error(
-                        "Dữ liệu vertices không hợp lệ. Hãy dán đúng định dạng JSON array."
+                        "Invalid vertices data. Please paste a valid JSON array."
                       );
                     }
                   }}
@@ -550,14 +552,14 @@ const UpdateMapTemplate: React.FC<UpdateMapTemplateProps> = ({
             onClick={handleCancel}
             className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
           >
-            Hủy
+            Cancel
           </button>
           <button
             type="button"
             onClick={handleSubmit}
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Lưu
+            Save
           </button>
         </div>
       </form>
